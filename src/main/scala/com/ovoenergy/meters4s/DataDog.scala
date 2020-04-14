@@ -1,4 +1,4 @@
-package com.ovoenergy.metrics4s
+package com.ovoenergy.meters4s
 
 import cats.effect.{Resource, Sync}
 import io.micrometer.core.instrument.MeterRegistry

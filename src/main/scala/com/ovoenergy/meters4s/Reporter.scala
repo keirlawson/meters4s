@@ -1,8 +1,8 @@
-package com.ovoenergy.metrics4s
+package com.ovoenergy.meters4s
 
 import cats.effect.Sync
 import cats.implicits._
-import com.ovoenergy.metrics4s.Reporter.{Counter, Timer}
+import com.ovoenergy.meters4s.Reporter.{Counter, Timer}
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import io.micrometer.core.instrument.{MeterRegistry, Tag}
 import io.micrometer.core.{instrument => micrometer}
