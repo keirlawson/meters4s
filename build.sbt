@@ -1,8 +1,8 @@
 lazy val root = (project in file("."))
   .settings(
     organization := "com.ovoenergy",
-    name := "metrics4s",
-    version := "0.0.1",
+    name := "meters4s",
+    version := "0.0.2",
     scalaVersion := "2.13.1",
     bintrayOrganization := Some("ovotech"),
     bintrayRepository := "maven-private",
