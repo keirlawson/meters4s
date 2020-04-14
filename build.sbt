@@ -5,6 +5,9 @@ lazy val root = (project in file("."))
     version := "0.0.1-SNAPSHOT",
     scalaVersion := "2.13.1",
     libraryDependencies ++= Seq(
+      "org.typelevel"            %% "cats-core"                   % "2.1.1",
+      "org.typelevel"            %% "cats-effect"                 % "2.1.2",
+      "org.scala-lang.modules"   %% "scala-java8-compat"          % "0.9.1",
       "org.specs2"               %% "specs2-core"                 % "4.8.3" % "test",
       "io.micrometer"            %  "micrometer-registry-datadog" % "1.4.1",
       // See https://github.com/micrometer-metrics/micrometer/issues/1133#issuecomment-452434205
