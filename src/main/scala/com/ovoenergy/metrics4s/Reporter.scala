@@ -7,7 +7,6 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import io.micrometer.core.instrument.{MeterRegistry, Tag}
 import io.micrometer.core.{instrument => micrometer}
 
-import scala.compat.java8.DurationConverters._
 import scala.concurrent.duration._
 import scala.jdk.CollectionConverters._
 
@@ -28,7 +27,6 @@ object Reporter {
 
   trait Timer[F[_]] {
     def record(d: FiniteDuration): F[Unit]
-    def record(d: java.time.Duration): F[Unit] = record(d.toScala)
   }
 
   def apply[F[_]](implicit ev: Reporter[F]): Reporter[F] = ev

@@ -2,7 +2,7 @@ package com.ovoenergy.metrics4s
 
 import cats.effect.{Resource, Sync}
 import io.micrometer.core.instrument.MeterRegistry
-import io.micrometer.datadog.{DatadogConfig, DatadogMeterRegistry}
+import io.micrometer.datadog.{DatadogConfig => MmDatadogConfig, DatadogMeterRegistry}
 import cats.implicits._
 import scala.concurrent.duration._
 
@@ -18,7 +18,7 @@ case class DataDogConfig(
 object DataDog {
   private def createMeterRegistry[F[_]: Sync](c: DataDogConfig): Resource[F, MeterRegistry] = {
 
-    val datadogConfig: DatadogConfig = new DatadogConfig {
+    val datadogConfig: MmDatadogConfig = new MmDatadogConfig {
       override val apiKey = c.apiKey
       override val applicationKey = c.applicationKey
       override val enabled = true
