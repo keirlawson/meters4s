@@ -2,8 +2,11 @@ lazy val root = (project in file("."))
   .settings(
     organization := "com.ovoenergy",
     name := "metrics4s",
-    version := "0.0.1-SNAPSHOT",
+    version := "0.0.1",
     scalaVersion := "2.13.1",
+    bintrayOrganization := Some("ovotech"),
+    bintrayRepository := "maven-private",
+    bintrayOmitLicense := true,
     libraryDependencies ++= Seq(
       "org.typelevel"            %% "cats-core"                   % "2.1.1",
       "org.typelevel"            %% "cats-effect"                 % "2.1.2",
