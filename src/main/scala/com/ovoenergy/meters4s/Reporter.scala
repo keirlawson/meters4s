@@ -22,11 +22,15 @@ trait Reporter[F[_]] {
 
 object Reporter {
   trait Counter[F[_]] {
-    def increment: F[Unit]
+    def increment: F[Unit] = this.increment(1)
+    def increment(amount: Double): F[Unit]
+    def count(): F[Double]
   }
 
   trait Timer[F[_]] {
     def record(d: FiniteDuration): F[Unit]
+    def wrap[A](f: F[A]): F[A]
+    def count(): F[Long]
   }
 
   def apply[F[_]](implicit ev: Reporter[F]): Reporter[F] = ev
@@ -52,7 +56,9 @@ object Reporter {
           }
           .map { c =>
             new Counter[F] {
-              def increment = F.delay(c.increment)
+              def increment(amount: Double) = F.delay(c.increment(amount))
+
+              def count(): F[Double] = F.delay(c.count())
             }
           }
 
@@ -66,6 +72,14 @@ object Reporter {
           .map { t =>
             new Timer[F] {
               def record(d: FiniteDuration) = F.delay(t.record(d.toMillis, MILLISECONDS))
+
+              def wrap[A](f: F[A]): F[A] = for {
+                sample <- F.delay(micrometer.Timer.start())
+                a <- f
+                _ <- F.delay(sample.stop(t))
+              } yield a
+
+              def count(): F[Long] = F.delay(t.count())
             }
           }
 
