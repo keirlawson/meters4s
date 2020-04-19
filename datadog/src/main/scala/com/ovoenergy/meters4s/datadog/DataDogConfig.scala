@@ -1,21 +1,25 @@
-package com.ovoenergy.meters4s
+package com.ovoenergy.meters4s.datadog
 
 import cats.effect.{Resource, Sync}
 import io.micrometer.core.instrument.MeterRegistry
-import io.micrometer.datadog.{DatadogConfig => MmDatadogConfig, DatadogMeterRegistry}
+import io.micrometer.datadog.DatadogMeterRegistry
 import cats.implicits._
+
 import scala.concurrent.duration._
+import io.micrometer.datadog.{DatadogConfig => MmDatadogConfig}
+import com.ovoenergy.meters4s.{MetricsConfig, Reporter}
 
 import scala.concurrent.duration.FiniteDuration
 
 case class DataDogConfig(
-  rate: FiniteDuration = 10.seconds,
-  endpoint: String = "",//Uri = Uri(), FIXME used to be URI
-  apiKey: String = "",
-  applicationKey: String = ""
-)
+                          rate: FiniteDuration = 10.seconds,
+                          endpoint: String = "",//Uri = Uri(), FIXME used to be URI
+                          apiKey: String = "",
+                          applicationKey: String = ""
+                        )
 
-object DataDog {
+
+package object DataDog {
   private def createMeterRegistry[F[_]: Sync](c: DataDogConfig): Resource[F, MeterRegistry] = {
 
     val datadogConfig: MmDatadogConfig = new MmDatadogConfig {
