@@ -11,12 +11,15 @@ import scala.concurrent.duration._
 import scala.jdk.CollectionConverters._
 
 case class MetricsConfig(
-  prefix: String = "",
-  tags: Map[String, String] = Map.empty,
+    prefix: String = "",
+    tags: Map[String, String] = Map.empty
 )
 
 trait Reporter[F[_]] {
-  def counter(name: String, tags: Map[String, String] = Map.empty): F[Counter[F]]
+  def counter(
+      name: String,
+      tags: Map[String, String] = Map.empty
+  ): F[Counter[F]]
   def timer(name: String, tags: Map[String, String] = Map.empty): F[Timer[F]]
 }
 
@@ -39,7 +42,10 @@ object Reporter {
     fromRegistry[F](new SimpleMeterRegistry, c)
   }
 
-  def fromRegistry[F[_]](mx: MeterRegistry, config: MetricsConfig)(
+  def fromRegistry[F[_]](
+      mx: MeterRegistry,
+      config: MetricsConfig = MetricsConfig()
+  )(
       implicit F: Sync[F]
   ): Reporter[F] =
     new Reporter[F] {
@@ -71,13 +77,15 @@ object Reporter {
           }
           .map { t =>
             new Timer[F] {
-              def record(d: FiniteDuration) = F.delay(t.record(d.toMillis, MILLISECONDS))
+              def record(d: FiniteDuration) =
+                F.delay(t.record(d.toMillis, MILLISECONDS))
 
-              def wrap[A](f: F[A]): F[A] = for {
-                sample <- F.delay(micrometer.Timer.start())
-                a <- f
-                _ <- F.delay(sample.stop(t))
-              } yield a
+              def wrap[A](f: F[A]): F[A] =
+                for {
+                  sample <- F.delay(micrometer.Timer.start())
+                  a <- f
+                  _ <- F.delay(sample.stop(t))
+                } yield a
 
               def count(): F[Long] = F.delay(t.count())
             }
