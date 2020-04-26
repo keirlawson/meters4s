@@ -5,6 +5,8 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import cats.effect.IO
 import scala.jdk.CollectionConverters._
 import io.micrometer.core.instrument.Tag
+import scala.concurrent.duration.FiniteDuration
+import java.util.concurrent.TimeUnit
 
 class ReporterTest extends Specification {
   "counter" >> {
@@ -97,8 +99,25 @@ class ReporterTest extends Specification {
   }
 
   "timer" >> {
-    "must " >> {
-      2 must_== 2
+    "record should record the supplied duration" >> {
+      val registry = new SimpleMeterRegistry
+      val reporter = Reporter.fromRegistry[IO](registry)
+
+      val testee = reporter.timer("test.timer")
+      testee
+        .flatMap(_.record(FiniteDuration(10, TimeUnit.SECONDS)))
+        .unsafeRunSync()
+
+      registry.timer("test.timer").totalTime(TimeUnit.SECONDS) must_== 10
+    }
+
+    "count must return the value of the underlying counter" >> {
+      val registry = new SimpleMeterRegistry
+      val reporter = Reporter.fromRegistry[IO](registry)
+      registry.timer("test.timer").record(10, TimeUnit.SECONDS)
+
+      val testee = reporter.timer("test.timer")
+      testee.flatMap(_.count()).unsafeRunSync() must_== 1
     }
   }
 }
