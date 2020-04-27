@@ -82,7 +82,7 @@ object Reporter {
 
               def wrap[A](f: F[A]): F[A] =
                 for {
-                  sample <- F.delay(micrometer.Timer.start())
+                  sample <- F.delay(micrometer.Timer.start(mx))
                   a <- f
                   _ <- F.delay(sample.stop(t))
                 } yield a

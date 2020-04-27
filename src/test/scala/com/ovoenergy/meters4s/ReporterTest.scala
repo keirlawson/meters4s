@@ -7,6 +7,8 @@ import scala.jdk.CollectionConverters._
 import io.micrometer.core.instrument.Tag
 import scala.concurrent.duration.FiniteDuration
 import java.util.concurrent.TimeUnit
+import io.micrometer.core.instrument.simple.SimpleConfig
+import io.micrometer.core.instrument.MockClock
 
 class ReporterTest extends Specification {
   "counter" >> {
@@ -109,6 +111,23 @@ class ReporterTest extends Specification {
         .unsafeRunSync()
 
       registry.timer("test.timer").totalTime(TimeUnit.SECONDS) must_== 10
+    }
+
+    "wrap must time the wrapped task" >> {
+      val mockClock = new MockClock
+      val registry = new SimpleMeterRegistry(SimpleConfig.DEFAULT, mockClock)
+      val reporter = Reporter.fromRegistry[IO](registry)
+      val initialTime = mockClock.monotonicTime()
+
+      val testee = reporter.timer("test.timer")
+
+      testee
+        .flatMap(_.wrap(IO { mockClock.add(123, TimeUnit.SECONDS) }))
+        .unsafeRunSync()
+
+      registry
+        .timer("test.timer")
+        .totalTime(TimeUnit.SECONDS) must_== 123
     }
 
     "count must return the value of the underlying counter" >> {
