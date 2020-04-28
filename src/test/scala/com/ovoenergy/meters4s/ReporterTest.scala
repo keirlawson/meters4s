@@ -9,6 +9,7 @@ import scala.concurrent.duration.FiniteDuration
 import java.util.concurrent.TimeUnit
 import io.micrometer.core.instrument.simple.SimpleConfig
 import io.micrometer.core.instrument.MockClock
+import java.sql.Time
 
 class ReporterTest extends Specification {
   "counter" >> {
@@ -137,6 +138,71 @@ class ReporterTest extends Specification {
 
       val testee = reporter.timer("test.timer")
       testee.flatMap(_.count()).unsafeRunSync() must_== 1
+    }
+
+    "must add specified tags" >> {
+      val registry = new SimpleMeterRegistry
+      val reporter = Reporter.fromRegistry[IO](registry)
+      val someTags = Map("tag 1" -> "A", "tag 2" -> "B")
+
+      val testee = reporter.timer("test.timer", someTags)
+      testee
+        .flatMap(_.record(FiniteDuration(10, TimeUnit.SECONDS)))
+        .unsafeRunSync()
+
+      val resultingTags = registry
+        .find("test.timer")
+        .timer()
+        .getId()
+        .getTags()
+        .asScala
+
+      resultingTags must contain(
+        Tag.of("tag 1", "A"),
+        Tag.of("tag 2", "B")
+      )
+    }
+    "must add configured global tags" >> {
+      val registry = new SimpleMeterRegistry
+      val someTags = Map("tag 1" -> "A", "tag 2" -> "B")
+      val reporter =
+        Reporter.fromRegistry[IO](registry, MetricsConfig(tags = someTags))
+
+      val testee = reporter.timer("test.timer")
+      testee
+        .flatMap(_.record(FiniteDuration(10, TimeUnit.SECONDS)))
+        .unsafeRunSync()
+
+      val resultingTags = registry
+        .find("test.timer")
+        .timer()
+        .getId()
+        .getTags()
+        .asScala
+
+      resultingTags must contain(
+        Tag.of("tag 1", "A"),
+        Tag.of("tag 2", "B")
+      )
+    }
+    "must add configured global prefix" >> {
+      val registry = new SimpleMeterRegistry
+      val somePrefix = "some.prefix"
+      val reporter =
+        Reporter.fromRegistry[IO](registry, MetricsConfig(prefix = somePrefix))
+
+      val testee = reporter.timer("test.timer")
+      testee
+        .flatMap(_.record(FiniteDuration(10, TimeUnit.SECONDS)))
+        .unsafeRunSync()
+
+      val resultingName = registry
+        .find(somePrefix + "test.timer")
+        .timer()
+        .getId()
+        .getName()
+
+      resultingName must startWith(somePrefix)
     }
   }
 }
