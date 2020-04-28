@@ -9,7 +9,6 @@ import scala.concurrent.duration.FiniteDuration
 import java.util.concurrent.TimeUnit
 import io.micrometer.core.instrument.simple.SimpleConfig
 import io.micrometer.core.instrument.MockClock
-import java.sql.Time
 
 class ReporterTest extends Specification {
   "counter" >> {
@@ -23,7 +22,7 @@ class ReporterTest extends Specification {
       registry.counter("test.counter").count() must_== 1
     }
     "increment with amount must increment underlying counter by that amount" >> {
-      val someAmount = 123
+      val someAmount: Double = 123
       val registry = new SimpleMeterRegistry
       val reporter = Reporter.fromRegistry[IO](registry)
 
@@ -33,7 +32,7 @@ class ReporterTest extends Specification {
       registry.counter("test.counter").count() must_== someAmount
     }
     "count must return the value of the underlying counter" >> {
-      val someAmount = 123
+      val someAmount: Double = 123
       val registry = new SimpleMeterRegistry
       val reporter = Reporter.fromRegistry[IO](registry)
       registry.counter("test.counter").increment(someAmount)
@@ -118,7 +117,6 @@ class ReporterTest extends Specification {
       val mockClock = new MockClock
       val registry = new SimpleMeterRegistry(SimpleConfig.DEFAULT, mockClock)
       val reporter = Reporter.fromRegistry[IO](registry)
-      val initialTime = mockClock.monotonicTime()
 
       val testee = reporter.timer("test.timer")
 
