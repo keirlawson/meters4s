@@ -12,21 +12,22 @@ import com.ovoenergy.meters4s.{MetricsConfig, Reporter}
 import scala.concurrent.duration.FiniteDuration
 
 case class DataDogConfig(
-                          rate: FiniteDuration = 10.seconds,
-                          endpoint: String = "",//Uri = Uri(), FIXME used to be URI
-                          apiKey: String = "",
-                          applicationKey: String = ""
-                        )
-
+    rate: FiniteDuration = 10.seconds,
+    endpoint: String = "", //Uri = Uri(), FIXME used to be URI
+    apiKey: String = "",
+    applicationKey: String = ""
+)
 
 package object DataDog {
-  private def createMeterRegistry[F[_]: Sync](c: DataDogConfig): Resource[F, MeterRegistry] = {
+  private def createMeterRegistry[F[_]: Sync](
+      c: DataDogConfig
+  ): Resource[F, MeterRegistry] = {
 
     val datadogConfig: MmDatadogConfig = new MmDatadogConfig {
       override val apiKey = c.apiKey
       override val applicationKey = c.applicationKey
       override val enabled = true
-      override val step = java.time.Duration.ofSeconds(c.rate.toSeconds.toInt)
+      override val step = java.time.Duration.ofSeconds(c.rate.toSeconds.toLong)
       override val uri = c.endpoint.toString
       // The parent of DatadogConfig need this abstract method to return null
       // to apply the default value
@@ -45,7 +46,12 @@ package object DataDog {
 
   }
 
-  def createRegistry[F[_]: Sync](dataDogConfig: DataDogConfig, c: MetricsConfig): Resource[F, Reporter[F]] = {
-    createMeterRegistry[F](dataDogConfig).map(registry => Reporter.fromRegistry(registry, c))
+  def createRegistry[F[_]: Sync](
+      dataDogConfig: DataDogConfig,
+      c: MetricsConfig
+  ): Resource[F, Reporter[F]] = {
+    createMeterRegistry[F](dataDogConfig).map(registry =>
+      Reporter.fromRegistry(registry, c)
+    )
   }
 }

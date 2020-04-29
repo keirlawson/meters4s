@@ -34,3 +34,13 @@ lazy val datadog = project
     )
   )
   .dependsOn(root)
+
+lazy val statsd = project
+  .settings(
+    name := "meters4s-statsd",
+    commonSettings,
+    libraryDependencies ++= commonDependencies ++ Seq(
+      "io.micrometer" % "micrometer-registry-statsd" % "1.4.1"
+    )
+  )
+  .dependsOn(root)
