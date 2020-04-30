@@ -13,9 +13,11 @@ import scala.concurrent.duration.FiniteDuration
 
 case class DataDogConfig(
     rate: FiniteDuration = 10.seconds,
-    endpoint: String = "", //Uri = Uri(), FIXME used to be URI
-    apiKey: String = "",
-    applicationKey: String = ""
+    uri: String = "https://api.datadoghq.com",
+    apiKey: String,
+    applicationKey: Option[String] = None,
+    descriptions: Boolean = false,
+    hostTag: Option[String] = None
 )
 
 package object DataDog {
@@ -25,10 +27,12 @@ package object DataDog {
 
     val datadogConfig: MmDatadogConfig = new MmDatadogConfig {
       override val apiKey = c.apiKey
-      override val applicationKey = c.applicationKey
+      override val applicationKey = c.applicationKey.orNull
       override val enabled = true
       override val step = java.time.Duration.ofSeconds(c.rate.toSeconds.toLong)
-      override val uri = c.endpoint.toString
+      override val uri = c.uri
+      override val descriptions = c.descriptions
+      override val hostTag = c.hostTag.orNull
       // The parent of DatadogConfig need this abstract method to return null
       // to apply the default value
       def get(id: String): String = null
