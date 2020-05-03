@@ -69,10 +69,12 @@ class MeterRegistryReporter[F[_]](mx: MeterRegistry, config: MetricsConfig)(
   def effectiveTags(tags: Map[String, String]) =
     (config.tags ++ tags).map { case (k, v) => Tag.of(k, v) }.asJava
 
+  def metricName(name: String): String = s"${config.prefix}${name}"
+
   def counter(name: String, tags: Map[String, String]): F[Counter[F]] =
     F.delay {
         micrometer.Counter
-          .builder(s"${config.prefix}${name}")
+          .builder(metricName(name))
           .tags(effectiveTags(tags))
           .register(mx)
       }
@@ -87,7 +89,7 @@ class MeterRegistryReporter[F[_]](mx: MeterRegistry, config: MetricsConfig)(
   def timer(name: String, tags: Map[String, String]): F[Timer[F]] =
     F.delay {
         micrometer.Timer
-          .builder(s"${config.prefix}${name}")
+          .builder(metricName(name))
           .tags(effectiveTags(tags))
           .register(mx)
       }
