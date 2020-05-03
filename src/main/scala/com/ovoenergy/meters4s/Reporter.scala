@@ -36,6 +36,17 @@ object Reporter {
     def count(): F[Long]
   }
 
+  trait Gauge[F[_]] {
+    def increment: F[Unit] = increment(1)
+    def increment(n: Int): F[Unit]
+
+    def decrement: F[Unit] = increment(-1)
+    def decrement(n: Int): F[Unit] = increment(-n)
+
+    /** Run `action` with the gauge incremented before execution and decremented after termination (including error or cancelation) */
+    def surround[A](action: F[A]): F[A]
+  }
+
   def apply[F[_]](implicit ev: Reporter[F]): Reporter[F] = ev
 
   def createSimple[F[_]](c: MetricsConfig)(implicit F: Sync[F]): Reporter[F] = {
@@ -48,48 +59,51 @@ object Reporter {
   )(
       implicit F: Sync[F]
   ): Reporter[F] =
-    new Reporter[F] {
-      // local tags overwrite global tags
-      def effectiveTags(tags: Map[String, String]) =
-        (config.tags ++ tags).map { case (k, v) => Tag.of(k, v) }.asJava
+    new MeterRegistryReporter[F](mx, config)
+}
 
-      def counter(name: String, tags: Map[String, String]): F[Counter[F]] =
-        F.delay {
-            micrometer.Counter
-              .builder(s"${config.prefix}${name}")
-              .tags(effectiveTags(tags))
-              .register(mx)
-          }
-          .map { c =>
-            new Counter[F] {
-              def increment(amount: Double) = F.delay(c.increment(amount))
+class MeterRegistryReporter[F[_]](mx: MeterRegistry, config: MetricsConfig)(
+    implicit F: Sync[F]
+) extends Reporter[F] {
+  // local tags overwrite global tags
+  def effectiveTags(tags: Map[String, String]) =
+    (config.tags ++ tags).map { case (k, v) => Tag.of(k, v) }.asJava
 
-              def count(): F[Double] = F.delay(c.count())
-            }
-          }
+  def counter(name: String, tags: Map[String, String]): F[Counter[F]] =
+    F.delay {
+        micrometer.Counter
+          .builder(s"${config.prefix}${name}")
+          .tags(effectiveTags(tags))
+          .register(mx)
+      }
+      .map { c =>
+        new Counter[F] {
+          def increment(amount: Double) = F.delay(c.increment(amount))
 
-      def timer(name: String, tags: Map[String, String]): F[Timer[F]] =
-        F.delay {
-            micrometer.Timer
-              .builder(s"${config.prefix}${name}")
-              .tags(effectiveTags(tags))
-              .register(mx)
-          }
-          .map { t =>
-            new Timer[F] {
-              def record(d: FiniteDuration) =
-                F.delay(t.record(d.toMillis, MILLISECONDS))
+          def count(): F[Double] = F.delay(c.count())
+        }
+      }
 
-              def wrap[A](f: F[A]): F[A] =
-                for {
-                  sample <- F.delay(micrometer.Timer.start(mx))
-                  a <- f
-                  _ <- F.delay(sample.stop(t))
-                } yield a
+  def timer(name: String, tags: Map[String, String]): F[Timer[F]] =
+    F.delay {
+        micrometer.Timer
+          .builder(s"${config.prefix}${name}")
+          .tags(effectiveTags(tags))
+          .register(mx)
+      }
+      .map { t =>
+        new Timer[F] {
+          def record(d: FiniteDuration) =
+            F.delay(t.record(d.toMillis, MILLISECONDS))
 
-              def count(): F[Long] = F.delay(t.count())
-            }
-          }
+          def wrap[A](f: F[A]): F[A] =
+            for {
+              sample <- F.delay(micrometer.Timer.start(mx))
+              a <- f
+              _ <- F.delay(sample.stop(t))
+            } yield a
 
-    }
+          def count(): F[Long] = F.delay(t.count())
+        }
+      }
 }
