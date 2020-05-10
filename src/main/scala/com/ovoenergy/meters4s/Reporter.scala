@@ -2,13 +2,16 @@ package com.ovoenergy.meters4s
 
 import cats.effect.Sync
 import cats.implicits._
-import com.ovoenergy.meters4s.Reporter.{Counter, Timer}
+import cats.effect.implicits._
+import Reporter.{Counter, Timer, Gauge}
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import io.micrometer.core.instrument.{MeterRegistry, Tag}
 import io.micrometer.core.{instrument => micrometer}
 
 import scala.concurrent.duration._
 import scala.jdk.CollectionConverters._
+import scala.collection.mutable
+import java.util.concurrent.atomic.AtomicInteger
 
 case class MetricsConfig(
     prefix: String = "",
@@ -37,11 +40,11 @@ object Reporter {
   }
 
   trait Gauge[F[_]] {
-    def increment: F[Unit] = increment(1)
-    def increment(n: Int): F[Unit]
+    def increment: F[Unit] = incrementN(1)
+    def incrementN(n: Int): F[Unit]
 
-    def decrement: F[Unit] = increment(-1)
-    def decrement(n: Int): F[Unit] = increment(-n)
+    def decrement: F[Unit] = incrementN(-1)
+    def decrementN(n: Int): F[Unit] = incrementN(-n)
 
     /** Run `action` with the gauge incremented before execution and decremented after termination (including error or cancelation) */
     def surround[A](action: F[A]): F[A]
@@ -49,7 +52,7 @@ object Reporter {
 
   def apply[F[_]](implicit ev: Reporter[F]): Reporter[F] = ev
 
-  def createSimple[F[_]](c: MetricsConfig)(implicit F: Sync[F]): Reporter[F] = {
+  def createSimple[F[_]](c: MetricsConfig)(implicit F: Sync[F]): F[Reporter[F]] = {
     fromRegistry[F](new SimpleMeterRegistry, c)
   }
 
@@ -58,11 +61,30 @@ object Reporter {
       config: MetricsConfig = MetricsConfig()
   )(
       implicit F: Sync[F]
-  ): Reporter[F] =
-    new MeterRegistryReporter[F](mx, config)
+  ): F[Reporter[F]] = F.delay {
+    //FIXME do semaphore here
+    new MeterRegistryReporter[F](mx, config, mutable.Map.empty)
+  }
+  
 }
 
-class MeterRegistryReporter[F[_]](mx: MeterRegistry, config: MetricsConfig)(
+private class GaugeKey(private val name: String, tags: java.lang.Iterable[Tag]) {
+  private val tagSet: Set[micrometer.Tag] = tags.asScala.toSet
+
+  override def equals(obj: Any): Boolean = obj match {
+    case other: GaugeKey =>
+      name == other.name &&
+        tagSet == other.tagSet
+    case _ => false
+  }
+
+  override def hashCode(): Int =
+    name.hashCode * 31 + tagSet.hashCode()
+
+  override def toString: String = s"GaugeKey($name, $tags)"
+}
+
+private class MeterRegistryReporter[F[_]](mx: MeterRegistry, config: MetricsConfig, activeGauges: mutable.Map[GaugeKey, AtomicInteger])(
     implicit F: Sync[F]
 ) extends Reporter[F] {
   // local tags overwrite global tags
@@ -108,4 +130,41 @@ class MeterRegistryReporter[F[_]](mx: MeterRegistry, config: MetricsConfig)(
           def count(): F[Long] = F.delay(t.count())
         }
       }
+
+  private def registerGauge(name: String, tags: java.lang.Iterable[Tag]): F[AtomicInteger] = F.delay(new AtomicInteger()).flatTap { gauge =>
+    F.delay(
+      micrometer.Gauge
+        .builder(
+          name,
+          gauge, { x: AtomicInteger =>
+            x.doubleValue
+          }
+        )
+        .tags(tags)
+        .register(mx)
+    )
+  }
+
+  def gauge(name: String, tags: Map[String, String]): F[Gauge[F]] = {
+      val pname = metricName(name)
+      val allTags = effectiveTags(tags)
+      val gaugeKey = new GaugeKey(pname, allTags)
+
+      val gauge: F[AtomicInteger] = activeGauges
+          .get(gaugeKey)
+          .fold {
+            registerGauge(pname, allTags).flatTap(x => F.delay(activeGauges.put(gaugeKey, x)))
+          }(_.pure[F])
+      
+      gauge.map { counter =>
+        new Gauge[F] {
+          def incrementN(n: Int): F[Unit] =
+            F.delay(counter.getAndAdd(n)).void
+
+          def surround[A](action: F[A]): F[A] =
+            increment.bracket(_ => action)(_ => decrement)
+        }
+      }
+
+  }
 }
