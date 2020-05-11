@@ -1,8 +1,9 @@
 package com.ovoenergy.meters4s
 
-import cats.effect.Sync
+import cats.effect.{Sync, Concurrent}
 import cats.implicits._
 import cats.effect.implicits._
+import cats.effect.concurrent.Semaphore
 import Reporter.{Counter, Timer, Gauge}
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import io.micrometer.core.instrument.{MeterRegistry, Tag}
@@ -52,23 +53,27 @@ object Reporter {
 
   def apply[F[_]](implicit ev: Reporter[F]): Reporter[F] = ev
 
-  def createSimple[F[_]](c: MetricsConfig)(implicit F: Sync[F]): F[Reporter[F]] = {
+  def createSimple[F[_]: Concurrent](
+      c: MetricsConfig
+  ): F[Reporter[F]] = {
     fromRegistry[F](new SimpleMeterRegistry, c)
   }
 
-  def fromRegistry[F[_]](
+  def fromRegistry[F[_]: Concurrent](
       mx: MeterRegistry,
       config: MetricsConfig = MetricsConfig()
-  )(
-      implicit F: Sync[F]
-  ): F[Reporter[F]] = F.delay {
+  ): F[Reporter[F]] =
     //FIXME do semaphore here
-    new MeterRegistryReporter[F](mx, config, mutable.Map.empty)
-  }
-  
+    Semaphore[F](1).map { sem =>
+      new MeterRegistryReporter[F](mx, config, mutable.Map.empty, sem)
+    }
+
 }
 
-private class GaugeKey(private val name: String, tags: java.lang.Iterable[Tag]) {
+private class GaugeKey(
+    private val name: String,
+    tags: java.lang.Iterable[Tag]
+) {
   private val tagSet: Set[micrometer.Tag] = tags.asScala.toSet
 
   override def equals(obj: Any): Boolean = obj match {
@@ -84,7 +89,12 @@ private class GaugeKey(private val name: String, tags: java.lang.Iterable[Tag]) 
   override def toString: String = s"GaugeKey($name, $tags)"
 }
 
-private class MeterRegistryReporter[F[_]](mx: MeterRegistry, config: MetricsConfig, activeGauges: mutable.Map[GaugeKey, AtomicInteger])(
+private class MeterRegistryReporter[F[_]](
+    mx: MeterRegistry,
+    config: MetricsConfig,
+    activeGauges: mutable.Map[GaugeKey, AtomicInteger],
+    gaugeSem: Semaphore[F]
+)(
     implicit F: Sync[F]
 ) extends Reporter[F] {
   // local tags overwrite global tags
@@ -131,14 +141,15 @@ private class MeterRegistryReporter[F[_]](mx: MeterRegistry, config: MetricsConf
         }
       }
 
-  private def registerGauge(name: String, tags: java.lang.Iterable[Tag]): F[AtomicInteger] = F.delay(new AtomicInteger()).flatTap { gauge =>
+  private def registerGauge(
+      name: String,
+      tags: java.lang.Iterable[Tag]
+  ): F[AtomicInteger] = F.delay(new AtomicInteger()).flatTap { gauge =>
     F.delay(
       micrometer.Gauge
         .builder(
           name,
-          gauge, { x: AtomicInteger =>
-            x.doubleValue
-          }
+          gauge, { x: AtomicInteger => x.doubleValue }
         )
         .tags(tags)
         .register(mx)
@@ -146,25 +157,28 @@ private class MeterRegistryReporter[F[_]](mx: MeterRegistry, config: MetricsConf
   }
 
   def gauge(name: String, tags: Map[String, String]): F[Gauge[F]] = {
-      val pname = metricName(name)
-      val allTags = effectiveTags(tags)
-      val gaugeKey = new GaugeKey(pname, allTags)
+    val pname = metricName(name)
+    val allTags = effectiveTags(tags)
+    val gaugeKey = new GaugeKey(pname, allTags)
 
-      val gauge: F[AtomicInteger] = activeGauges
-          .get(gaugeKey)
-          .fold {
-            registerGauge(pname, allTags).flatTap(x => F.delay(activeGauges.put(gaugeKey, x)))
-          }(_.pure[F])
-      
-      gauge.map { counter =>
-        new Gauge[F] {
-          def incrementN(n: Int): F[Unit] =
-            F.delay(counter.getAndAdd(n)).void
+    val gauge: F[AtomicInteger] = gaugeSem.withPermit(
+      activeGauges
+        .get(gaugeKey)
+        .fold {
+          registerGauge(pname, allTags)
+            .flatTap(x => F.delay(activeGauges.put(gaugeKey, x)))
+        }(_.pure[F])
+    )
 
-          def surround[A](action: F[A]): F[A] =
-            increment.bracket(_ => action)(_ => decrement)
-        }
+    gauge.map { counter =>
+      new Gauge[F] {
+        def incrementN(n: Int): F[Unit] =
+          F.delay(counter.getAndAdd(n)).void
+
+        def surround[A](action: F[A]): F[A] =
+          increment.bracket(_ => action)(_ => decrement)
       }
+    }
 
   }
 }
