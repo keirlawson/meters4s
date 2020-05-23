@@ -63,7 +63,6 @@ object Reporter {
       mx: MeterRegistry,
       config: MetricsConfig = MetricsConfig()
   ): F[Reporter[F]] =
-    //FIXME do semaphore here
     Semaphore[F](1).map { sem =>
       new MeterRegistryReporter[F](mx, config, mutable.Map.empty, sem)
     }
@@ -149,7 +148,7 @@ private class MeterRegistryReporter[F[_]](
       micrometer.Gauge
         .builder(
           name,
-          gauge, { x: AtomicInteger => x.doubleValue }
+          gauge, { i: AtomicInteger => i.doubleValue }
         )
         .tags(tags)
         .register(mx)
@@ -161,16 +160,16 @@ private class MeterRegistryReporter[F[_]](
     val allTags = effectiveTags(tags)
     val gaugeKey = new GaugeKey(pname, allTags)
 
-    val gauge: F[AtomicInteger] = gaugeSem.withPermit(
+    val gaugeValue: F[AtomicInteger] = gaugeSem.withPermit(
       activeGauges
         .get(gaugeKey)
         .fold {
           registerGauge(pname, allTags)
-            .flatTap(x => F.delay(activeGauges.put(gaugeKey, x)))
+            .flatTap(g => F.delay(activeGauges.put(gaugeKey, g)))
         }(_.pure[F])
     )
 
-    gauge.map { counter =>
+    gaugeValue.map { counter =>
       new Gauge[F] {
         def incrementN(n: Int): F[Unit] =
           F.delay(counter.getAndAdd(n)).void

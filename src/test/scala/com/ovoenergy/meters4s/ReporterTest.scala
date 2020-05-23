@@ -9,12 +9,16 @@ import scala.concurrent.duration.FiniteDuration
 import java.util.concurrent.TimeUnit
 import io.micrometer.core.instrument.simple.SimpleConfig
 import io.micrometer.core.instrument.MockClock
+import scala.concurrent.ExecutionContext
 
-class ReporterTest extends Specification {
+class ReporterTest(implicit ec: ExecutionContext) extends Specification {
+
+  implicit val cs = IO.contextShift(ec)
+
   "counter" >> {
     "increment should increment underlying counter" >> {
       val registry = new SimpleMeterRegistry
-      val reporter = Reporter.fromRegistry[IO](registry)
+      val reporter = Reporter.fromRegistry[IO](registry).unsafeRunSync()
 
       val testee = reporter.counter("test.counter")
       testee.flatMap(_.increment).unsafeRunSync()
@@ -24,7 +28,7 @@ class ReporterTest extends Specification {
     "increment with amount must increment underlying counter by that amount" >> {
       val someAmount: Double = 123
       val registry = new SimpleMeterRegistry
-      val reporter = Reporter.fromRegistry[IO](registry)
+      val reporter = Reporter.fromRegistry[IO](registry).unsafeRunSync()
 
       val testee = reporter.counter("test.counter")
       testee.flatMap(_.increment(someAmount)).unsafeRunSync()
@@ -34,7 +38,7 @@ class ReporterTest extends Specification {
     "count must return the value of the underlying counter" >> {
       val someAmount: Double = 123
       val registry = new SimpleMeterRegistry
-      val reporter = Reporter.fromRegistry[IO](registry)
+      val reporter = Reporter.fromRegistry[IO](registry).unsafeRunSync()
       registry.counter("test.counter").increment(someAmount)
 
       val testee = reporter.counter("test.counter")
@@ -42,7 +46,7 @@ class ReporterTest extends Specification {
     }
     "must add specified tags" >> {
       val registry = new SimpleMeterRegistry
-      val reporter = Reporter.fromRegistry[IO](registry)
+      val reporter = Reporter.fromRegistry[IO](registry).unsafeRunSync()
       val someTags = Map("tag 1" -> "A", "tag 2" -> "B")
 
       val testee = reporter.counter("test.counter", someTags)
@@ -64,7 +68,7 @@ class ReporterTest extends Specification {
       val registry = new SimpleMeterRegistry
       val someTags = Map("tag 1" -> "A", "tag 2" -> "B")
       val reporter =
-        Reporter.fromRegistry[IO](registry, MetricsConfig(tags = someTags))
+        Reporter.fromRegistry[IO](registry, MetricsConfig(tags = someTags)).unsafeRunSync()
 
       val testee = reporter.counter("test.counter")
       testee.flatMap(_.increment).unsafeRunSync()
@@ -85,7 +89,7 @@ class ReporterTest extends Specification {
       val registry = new SimpleMeterRegistry
       val somePrefix = "some.prefix"
       val reporter =
-        Reporter.fromRegistry[IO](registry, MetricsConfig(prefix = somePrefix))
+        Reporter.fromRegistry[IO](registry, MetricsConfig(prefix = somePrefix)).unsafeRunSync()
 
       val testee = reporter.counter("test.counter")
       testee.flatMap(_.increment).unsafeRunSync()
@@ -103,7 +107,7 @@ class ReporterTest extends Specification {
   "timer" >> {
     "record should record the supplied duration" >> {
       val registry = new SimpleMeterRegistry
-      val reporter = Reporter.fromRegistry[IO](registry)
+      val reporter = Reporter.fromRegistry[IO](registry).unsafeRunSync()
 
       val testee = reporter.timer("test.timer")
       testee
@@ -116,7 +120,7 @@ class ReporterTest extends Specification {
     "wrap must time the wrapped task" >> {
       val mockClock = new MockClock
       val registry = new SimpleMeterRegistry(SimpleConfig.DEFAULT, mockClock)
-      val reporter = Reporter.fromRegistry[IO](registry)
+      val reporter = Reporter.fromRegistry[IO](registry).unsafeRunSync()
 
       val testee = reporter.timer("test.timer")
 
@@ -131,7 +135,7 @@ class ReporterTest extends Specification {
 
     "count must return the value of the underlying counter" >> {
       val registry = new SimpleMeterRegistry
-      val reporter = Reporter.fromRegistry[IO](registry)
+      val reporter = Reporter.fromRegistry[IO](registry).unsafeRunSync()
       registry.timer("test.timer").record(10, TimeUnit.SECONDS)
 
       val testee = reporter.timer("test.timer")
@@ -140,7 +144,7 @@ class ReporterTest extends Specification {
 
     "must add specified tags" >> {
       val registry = new SimpleMeterRegistry
-      val reporter = Reporter.fromRegistry[IO](registry)
+      val reporter = Reporter.fromRegistry[IO](registry).unsafeRunSync()
       val someTags = Map("tag 1" -> "A", "tag 2" -> "B")
 
       val testee = reporter.timer("test.timer", someTags)
@@ -164,7 +168,7 @@ class ReporterTest extends Specification {
       val registry = new SimpleMeterRegistry
       val someTags = Map("tag 1" -> "A", "tag 2" -> "B")
       val reporter =
-        Reporter.fromRegistry[IO](registry, MetricsConfig(tags = someTags))
+        Reporter.fromRegistry[IO](registry, MetricsConfig(tags = someTags)).unsafeRunSync()
 
       val testee = reporter.timer("test.timer")
       testee
@@ -187,7 +191,7 @@ class ReporterTest extends Specification {
       val registry = new SimpleMeterRegistry
       val somePrefix = "some.prefix"
       val reporter =
-        Reporter.fromRegistry[IO](registry, MetricsConfig(prefix = somePrefix))
+        Reporter.fromRegistry[IO](registry, MetricsConfig(prefix = somePrefix)).unsafeRunSync()
 
       val testee = reporter.timer("test.timer")
       testee
