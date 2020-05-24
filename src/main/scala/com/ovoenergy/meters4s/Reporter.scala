@@ -25,6 +25,7 @@ trait Reporter[F[_]] {
       tags: Map[String, String] = Map.empty
   ): F[Counter[F]]
   def timer(name: String, tags: Map[String, String] = Map.empty): F[Timer[F]]
+  def gauge(name: String, tags: Map[String, String] = Map.empty): F[Gauge[F]]
 }
 
 object Reporter {

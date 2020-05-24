@@ -207,4 +207,112 @@ class ReporterTest(implicit ec: ExecutionContext) extends Specification {
       resultingName must startWith(somePrefix)
     }
   }
+
+  "gauge" >> {
+    "increment should increment the gauge" >> {
+      val registry = new SimpleMeterRegistry
+      val reporter = Reporter.fromRegistry[IO](registry).unsafeRunSync()
+
+      val testee = reporter.gauge("test.gauge")
+      testee.flatMap(_.increment).unsafeRunSync()
+
+      registry.find("test.gauge").gauge().value must_== 1
+    }
+
+
+    "incrementN with amount must increment gauge by that amount" >> {
+      val someAmount = 123
+      val registry = new SimpleMeterRegistry
+      val reporter = Reporter.fromRegistry[IO](registry).unsafeRunSync()
+
+      val testee = reporter.gauge("test.gauge")
+      testee.flatMap(_.incrementN(someAmount)).unsafeRunSync()
+
+      registry.find("test.gauge").gauge().value must_== someAmount
+    }
+
+    "decrement should decrement the gauge" >> {
+      val registry = new SimpleMeterRegistry
+      val reporter = Reporter.fromRegistry[IO](registry).unsafeRunSync()
+
+      val testee = reporter.gauge("test.gauge")
+      testee.flatMap(_.decrement).unsafeRunSync()
+
+      registry.find("test.gauge").gauge().value must_== -1
+    }
+
+
+    "decrementN with amount must decrement gauge by that amount" >> {
+      val someAmount = 123
+      val registry = new SimpleMeterRegistry
+      val reporter = Reporter.fromRegistry[IO](registry).unsafeRunSync()
+
+      val testee = reporter.gauge("test.gauge")
+      testee.flatMap(_.decrementN(someAmount)).unsafeRunSync()
+
+      registry.find("test.gauge").gauge().value must_== -someAmount
+    }
+
+    "must add specified tags" >> {
+      val registry = new SimpleMeterRegistry
+      val reporter = Reporter.fromRegistry[IO](registry).unsafeRunSync()
+      val someTags = Map("tag 1" -> "A", "tag 2" -> "B")
+
+      val testee = reporter.gauge("test.gauge", someTags)
+      testee.flatMap(_.increment).unsafeRunSync()
+
+      val resultingTags = registry
+        .find("test.gauge")
+        .gauge()
+        .getId()
+        .getTags()
+        .asScala
+
+      resultingTags must contain(
+        Tag.of("tag 1", "A"),
+        Tag.of("tag 2", "B")
+      )
+    }
+
+    "must add configured global tags" >> {
+      val registry = new SimpleMeterRegistry
+      val someTags = Map("tag 1" -> "A", "tag 2" -> "B")
+      val reporter =
+        Reporter.fromRegistry[IO](registry, MetricsConfig(tags = someTags)).unsafeRunSync()
+
+      val testee = reporter.gauge("test.gauge")
+      testee.flatMap(_.increment).unsafeRunSync()
+
+      val resultingTags = registry
+        .find("test.gauge")
+        .gauge()
+        .getId()
+        .getTags()
+        .asScala
+
+      resultingTags must contain(
+        Tag.of("tag 1", "A"),
+        Tag.of("tag 2", "B")
+      )
+    }
+
+    "must add configured global prefix" >> {
+      val registry = new SimpleMeterRegistry
+      val somePrefix = "some.prefix"
+      val reporter =
+        Reporter.fromRegistry[IO](registry, MetricsConfig(prefix = somePrefix)).unsafeRunSync()
+
+      val testee = reporter.gauge("test.gauge")
+      testee.flatMap(_.increment).unsafeRunSync()
+
+      val resultingName = registry
+        .find(somePrefix + "test.gauge")
+        .gauge()
+        .getId()
+        .getName()
+
+      resultingName must startWith(somePrefix)
+    }
+
+  }
 }
