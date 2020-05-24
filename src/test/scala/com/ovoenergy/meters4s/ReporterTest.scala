@@ -68,7 +68,9 @@ class ReporterTest(implicit ec: ExecutionContext) extends Specification {
       val registry = new SimpleMeterRegistry
       val someTags = Map("tag 1" -> "A", "tag 2" -> "B")
       val reporter =
-        Reporter.fromRegistry[IO](registry, MetricsConfig(tags = someTags)).unsafeRunSync()
+        Reporter
+          .fromRegistry[IO](registry, MetricsConfig(tags = someTags))
+          .unsafeRunSync()
 
       val testee = reporter.counter("test.counter")
       testee.flatMap(_.increment).unsafeRunSync()
@@ -89,7 +91,9 @@ class ReporterTest(implicit ec: ExecutionContext) extends Specification {
       val registry = new SimpleMeterRegistry
       val somePrefix = "some.prefix"
       val reporter =
-        Reporter.fromRegistry[IO](registry, MetricsConfig(prefix = somePrefix)).unsafeRunSync()
+        Reporter
+          .fromRegistry[IO](registry, MetricsConfig(prefix = somePrefix))
+          .unsafeRunSync()
 
       val testee = reporter.counter("test.counter")
       testee.flatMap(_.increment).unsafeRunSync()
@@ -168,7 +172,9 @@ class ReporterTest(implicit ec: ExecutionContext) extends Specification {
       val registry = new SimpleMeterRegistry
       val someTags = Map("tag 1" -> "A", "tag 2" -> "B")
       val reporter =
-        Reporter.fromRegistry[IO](registry, MetricsConfig(tags = someTags)).unsafeRunSync()
+        Reporter
+          .fromRegistry[IO](registry, MetricsConfig(tags = someTags))
+          .unsafeRunSync()
 
       val testee = reporter.timer("test.timer")
       testee
@@ -191,7 +197,9 @@ class ReporterTest(implicit ec: ExecutionContext) extends Specification {
       val registry = new SimpleMeterRegistry
       val somePrefix = "some.prefix"
       val reporter =
-        Reporter.fromRegistry[IO](registry, MetricsConfig(prefix = somePrefix)).unsafeRunSync()
+        Reporter
+          .fromRegistry[IO](registry, MetricsConfig(prefix = somePrefix))
+          .unsafeRunSync()
 
       val testee = reporter.timer("test.timer")
       testee
@@ -219,7 +227,6 @@ class ReporterTest(implicit ec: ExecutionContext) extends Specification {
       registry.find("test.gauge").gauge().value must_== 1
     }
 
-
     "incrementN with amount must increment gauge by that amount" >> {
       val someAmount = 123
       val registry = new SimpleMeterRegistry
@@ -240,7 +247,6 @@ class ReporterTest(implicit ec: ExecutionContext) extends Specification {
 
       registry.find("test.gauge").gauge().value must_== -1
     }
-
 
     "decrementN with amount must decrement gauge by that amount" >> {
       val someAmount = 123
@@ -278,7 +284,9 @@ class ReporterTest(implicit ec: ExecutionContext) extends Specification {
       val registry = new SimpleMeterRegistry
       val someTags = Map("tag 1" -> "A", "tag 2" -> "B")
       val reporter =
-        Reporter.fromRegistry[IO](registry, MetricsConfig(tags = someTags)).unsafeRunSync()
+        Reporter
+          .fromRegistry[IO](registry, MetricsConfig(tags = someTags))
+          .unsafeRunSync()
 
       val testee = reporter.gauge("test.gauge")
       testee.flatMap(_.increment).unsafeRunSync()
@@ -300,7 +308,9 @@ class ReporterTest(implicit ec: ExecutionContext) extends Specification {
       val registry = new SimpleMeterRegistry
       val somePrefix = "some.prefix"
       val reporter =
-        Reporter.fromRegistry[IO](registry, MetricsConfig(prefix = somePrefix)).unsafeRunSync()
+        Reporter
+          .fromRegistry[IO](registry, MetricsConfig(prefix = somePrefix))
+          .unsafeRunSync()
 
       val testee = reporter.gauge("test.gauge")
       testee.flatMap(_.increment).unsafeRunSync()
