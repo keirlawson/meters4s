@@ -44,3 +44,15 @@ lazy val statsd = project
     )
   )
   .dependsOn(root)
+
+lazy val docs = project
+  .settings(
+    commonSettings,
+    mdocIn := file("docs/README.md"),
+    mdocOut := file("README.md"),
+    mdocVariables := Map(
+      "VERSION" -> version.value
+    )
+  )
+  .dependsOn(root)
+  .enablePlugins(MdocPlugin)
