@@ -9,7 +9,7 @@ for counters, timers, gauges and distributions.
 Add the following depdency to your `build.sbt`:
 
 ```scala
-libraryDependencies += "com.ovoenergy" %% "meters4s" % "0.2.0"
+libraryDependencies += "com.ovoenergy" %% "meters4s" % "0.3.0"
 ```
 
 You will likely also want to add the module corresponding to whichever monitoring system you want to report metrics to.  All 
@@ -20,13 +20,13 @@ For developer convience we also provide a couple of modules for particular monit
 StatsD to provide and ergonomic means for creating reporters for these registries.  These can be added to your poject as follows:
 
 ```scala
-libraryDependencies += "com.ovoenergy" %% "meters4s-datadog" % "0.2.0"
+libraryDependencies += "com.ovoenergy" %% "meters4s-datadog" % "0.3.0"
 ```
 
 or
 
 ```scala
-libraryDependencies += "com.ovoenergy" %% "meters4s-statsd" % "0.2.0"
+libraryDependencies += "com.ovoenergy" %% "meters4s-statsd" % "0.3.0"
 ```
 
 ## Usage
