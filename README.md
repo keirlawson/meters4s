@@ -41,6 +41,8 @@ libraryDependencies += "com.ovoenergy" %% "meters4s-statsd" % "0.3.0"
 
 ## Usage
 
+For comprehensive API documentation check [the scaladoc](https://ovotech.github.io/meters4s/latest/api/).
+
 A simple usage example for incrementing a counter, backed by a Micrometer `SimpleMeterRegistry`:
 
 ```scala

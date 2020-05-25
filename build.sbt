@@ -2,8 +2,11 @@ lazy val root = (project in file("."))
   .settings(
     name := "meters4s",
     commonSettings,
-    libraryDependencies ++= commonDependencies
+    libraryDependencies ++= commonDependencies,
+    git.remoteRepo := "git@github.com:ovotech/meters4s.git"
   )
+  .enablePlugins(GhpagesPlugin)
+  .enablePlugins(SiteScaladocPlugin)
 
 lazy val commonSettings = Seq(
   organization := "com.ovoenergy",
