@@ -1,6 +1,6 @@
 package com.ovoenergy.meters4s.statsd
 
-import cats.effect.{Resource, Sync}
+import cats.effect.{Resource, Sync, Concurrent}
 import com.ovoenergy.meters4s.{MetricsConfig, Reporter}
 import io.micrometer.statsd.{StatsdConfig => MmStatsdConfig}
 import io.micrometer.core.instrument.MeterRegistry
@@ -60,12 +60,12 @@ package object StatsD {
 
   }
 
-  def createRegistry[F[_]: Sync](
+  def createRegistry[F[_]: Concurrent](
       config: StatsdConfig,
       c: MetricsConfig
   ): Resource[F, Reporter[F]] = {
-    createMeterRegistry[F](config).map(registry =>
-      Reporter.fromRegistry(registry, c)
-    )
+    val reg = createMeterRegistry[F](config)
+
+    reg.flatMap(registry => Resource.liftF(Reporter.fromRegistry(registry, c)))
   }
 }

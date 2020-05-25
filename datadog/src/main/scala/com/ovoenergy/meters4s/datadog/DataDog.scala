@@ -10,6 +10,7 @@ import io.micrometer.datadog.{DatadogConfig => MmDatadogConfig}
 import com.ovoenergy.meters4s.{MetricsConfig, Reporter}
 
 import scala.concurrent.duration.FiniteDuration
+import cats.effect.Concurrent
 
 case class DataDogConfig(
     rate: FiniteDuration = 10.seconds,
@@ -50,12 +51,14 @@ package object DataDog {
 
   }
 
-  def createRegistry[F[_]: Sync](
+  def createRegistry[F[_]: Concurrent](
       dataDogConfig: DataDogConfig,
       c: MetricsConfig
   ): Resource[F, Reporter[F]] = {
-    createMeterRegistry[F](dataDogConfig).map(registry =>
-      Reporter.fromRegistry(registry, c)
+    val reg = createMeterRegistry[F](dataDogConfig)
+
+    reg.flatMap(registry =>
+      Resource.liftF(Reporter.fromRegistry[F](registry, c))
     )
   }
 }
