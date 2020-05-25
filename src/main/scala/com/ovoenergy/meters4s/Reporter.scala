@@ -30,8 +30,8 @@ trait Reporter[F[_]] {
 
 object Reporter {
   trait Counter[F[_]] {
-    def increment: F[Unit] = this.increment(1)
-    def increment(amount: Double): F[Unit]
+    def increment: F[Unit] = this.incrementN(1)
+    def incrementN(amount: Double): F[Unit]
     def count(): F[Double]
   }
 
@@ -112,7 +112,7 @@ private class MeterRegistryReporter[F[_]](
       }
       .map { c =>
         new Counter[F] {
-          def increment(amount: Double) = F.delay(c.increment(amount))
+          def incrementN(amount: Double) = F.delay(c.increment(amount))
 
           def count(): F[Double] = F.delay(c.count())
         }
