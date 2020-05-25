@@ -54,5 +54,5 @@ lazy val docs = project
       "VERSION" -> version.value
     )
   )
-  .dependsOn(root)
+  .dependsOn(datadog)
   .enablePlugins(MdocPlugin)

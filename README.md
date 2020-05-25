@@ -51,7 +51,16 @@ for {
 ### With Datadog
 
 ```scala
+import com.ovoenergy.meters4s.{MetricsConfig, Reporter}
+import com.ovoenergy.meters4s.datadog.{DataDog, DataDogConfig}
+import cats.effect.IO
 
+val datadog = DataDog.createReporter[IO](DataDogConfig(apiKey = "1234"), MetricsConfig())
+datadog.use { reporter =>
+    reporter.counter("my.counter").flatMap { counter =>
+        counter.increment(1)
+    }
+}
 ```
 
 ## Inspiration

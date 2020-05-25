@@ -60,7 +60,7 @@ package object StatsD {
 
   }
 
-  def createRegistry[F[_]: Concurrent](
+  def createReporter[F[_]: Concurrent](
       config: StatsdConfig,
       c: MetricsConfig
   ): Resource[F, Reporter[F]] = {

@@ -51,7 +51,7 @@ package object DataDog {
 
   }
 
-  def createRegistry[F[_]: Concurrent](
+  def createReporter[F[_]: Concurrent](
       dataDogConfig: DataDogConfig,
       c: MetricsConfig
   ): Resource[F, Reporter[F]] = {
