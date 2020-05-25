@@ -6,6 +6,16 @@ for counters, timers, gauges and distributions.
 
 ## Install
 
+Presently this library resides in the ovotech `maven-private` bintray which can be added yo your build.sbt with
+
+```scala
+resolvers ++= Seq(
+    Resolver.bintrayRepo("ovotech", "maven-private")
+)
+```
+
+Note that this repository requires authentication.
+
 Add the following depdency to your `build.sbt`:
 
 ```scala
