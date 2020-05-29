@@ -32,13 +32,13 @@ object Reporter {
   trait Counter[F[_]] {
     def increment: F[Unit] = this.incrementN(1)
     def incrementN(amount: Double): F[Unit]
-    def count(): F[Double]
+    def count: F[Double]
   }
 
   trait Timer[F[_]] {
     def record(d: FiniteDuration): F[Unit]
     def wrap[A](f: F[A]): F[A]
-    def count(): F[Long]
+    def count: F[Long]
   }
 
   trait Gauge[F[_]] {
@@ -114,7 +114,7 @@ private class MeterRegistryReporter[F[_]](
         new Counter[F] {
           def incrementN(amount: Double) = F.delay(c.increment(amount))
 
-          def count(): F[Double] = F.delay(c.count())
+          def count: F[Double] = F.delay(c.count())
         }
       }
 
@@ -137,7 +137,7 @@ private class MeterRegistryReporter[F[_]](
               _ <- F.delay(sample.stop(t))
             } yield a
 
-          def count(): F[Long] = F.delay(t.count())
+          def count: F[Long] = F.delay(t.count())
         }
       }
 

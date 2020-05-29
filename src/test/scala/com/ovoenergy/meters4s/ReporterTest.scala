@@ -31,7 +31,7 @@ class ReporterTest(implicit ec: ExecutionContext) extends Specification {
       val reporter = Reporter.fromRegistry[IO](registry).unsafeRunSync()
 
       val testee = reporter.counter("test.counter")
-      testee.flatMap(_.increment(someAmount)).unsafeRunSync()
+      testee.flatMap(_.incrementN(someAmount)).unsafeRunSync()
 
       registry.counter("test.counter").count() must_== someAmount
     }
@@ -42,7 +42,7 @@ class ReporterTest(implicit ec: ExecutionContext) extends Specification {
       registry.counter("test.counter").increment(someAmount)
 
       val testee = reporter.counter("test.counter")
-      testee.flatMap(_.count()).unsafeRunSync() must_== someAmount
+      testee.flatMap(_.count).unsafeRunSync() must_== someAmount
     }
     "must add specified tags" >> {
       val registry = new SimpleMeterRegistry
@@ -143,7 +143,7 @@ class ReporterTest(implicit ec: ExecutionContext) extends Specification {
       registry.timer("test.timer").record(10, TimeUnit.SECONDS)
 
       val testee = reporter.timer("test.timer")
-      testee.flatMap(_.count()).unsafeRunSync() must_== 1
+      testee.flatMap(_.count).unsafeRunSync() must_== 1
     }
 
     "must add specified tags" >> {
