@@ -7,6 +7,7 @@ lazy val root = (project in file("."))
   )
   .enablePlugins(GhpagesPlugin)
   .enablePlugins(SiteScaladocPlugin)
+  .aggregate(core, datadog, statsd, docs)
 
 lazy val commonSettings = Seq(
   organization := "com.ovoenergy",
@@ -28,6 +29,13 @@ lazy val commonDependencies = Seq(
   "com.google.code.findbugs" % "jsr305" % "3.0.2" % Optional
 )
 
+lazy val core = project
+  .settings(
+    name := "meters4s",
+    commonSettings,
+    libraryDependencies ++= commonDependencies
+  )
+
 lazy val datadog = project
   .settings(
     name := "meters4s-datadog",
@@ -36,7 +44,7 @@ lazy val datadog = project
       "io.micrometer" % "micrometer-registry-datadog" % "1.4.1"
     )
   )
-  .dependsOn(root)
+  .dependsOn(core)
 
 lazy val statsd = project
   .settings(
@@ -46,7 +54,7 @@ lazy val statsd = project
       "io.micrometer" % "micrometer-registry-statsd" % "1.4.1"
     )
   )
-  .dependsOn(root)
+  .dependsOn(core)
 
 lazy val docs = project
   .settings(
