@@ -12,6 +12,19 @@ import io.micrometer.statsd.StatsdProtocol
 import java.time.{Duration => JavaDuration}
 import io.micrometer.statsd.StatsdMeterRegistry
 
+/**
+  * Configuration to be passed to the underlying Micrometer DatadogMeterRegistry
+  *
+  * @param rate how frequently to report metrics to StatsD
+  * @param flavor the type of StatsD to talk to
+  * @param buffered whether or not buffer metrics to before sending to the StatsD server
+  * @param maxPacketLength the max length of the metrics payload
+  * @param pollingFrequency how often gauges will be polled
+  * @param publishUnchangedMeters whether unchanged meters should be published to the StatsD server
+  * @param protocol the protocol of the connection to the StatsD agent
+  * @param port the port of the StatsD agent
+  * @param host the host name of the StatsD agent
+  */
 case class StatsdConfig(
     rate: FiniteDuration = 10.seconds,
     flavor: StatsdFlavor = StatsdFlavor.DATADOG,
@@ -60,6 +73,12 @@ package object StatsD {
 
   }
 
+  /**
+    * Create a reporter for reporting metrics to a StatsD instance
+    *
+    * @param config the configuration for reporting to StatsD
+    * @param c the generic configuration to be applied to any produced metrics
+    */
   def createReporter[F[_]: Concurrent](
       config: StatsdConfig,
       c: MetricsConfig
