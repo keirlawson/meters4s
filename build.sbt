@@ -3,10 +3,16 @@ lazy val root = (project in file("."))
     name := "meters4s",
     commonSettings,
     libraryDependencies ++= commonDependencies,
-    git.remoteRepo := "git@github.com:ovotech/meters4s.git"
+    git.remoteRepo := "git@github.com:ovotech/meters4s.git",
+    siteSubdirName in ScalaUnidoc := "latest/api",
+    addMappingsToSiteDir(
+      mappings in (ScalaUnidoc, packageDoc),
+      siteSubdirName in ScalaUnidoc
+    )
   )
   .enablePlugins(GhpagesPlugin)
   .enablePlugins(SiteScaladocPlugin)
+  .enablePlugins(ScalaUnidocPlugin)
   .aggregate(core, datadog, statsd, docs)
 
 lazy val commonSettings = Seq(
