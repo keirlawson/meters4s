@@ -12,6 +12,16 @@ import com.ovoenergy.meters4s.{MetricsConfig, Reporter}
 import scala.concurrent.duration.FiniteDuration
 import cats.effect.Concurrent
 
+/**
+  * Configuration to be passed to the underlying Micrometer DatadogMeterRegistry
+  *
+  * @param rate how frequently to report metrics to Datadog
+  * @param uri the Datadog server URI
+  * @param apiKey the Datadog API key
+  * @param applicationKey the Datadog application key
+  * @param descriptions whether or not to send meter descriptions to Datadog
+  * @param hostTag the tag that will be mapped to "host" when reporting metrics to datadog
+  */
 case class DataDogConfig(
     rate: FiniteDuration = 10.seconds,
     uri: String = "https://api.datadoghq.com",
@@ -51,6 +61,12 @@ package object DataDog {
 
   }
 
+  /**
+    * Create a reporter for reporting metrics to Datadog
+    *
+    * @param dataDogConfig the configuration for reporting to Datadog
+    * @param c the generic configuration to be applied to any produced metrics
+    */
   def createReporter[F[_]: Concurrent](
       dataDogConfig: DataDogConfig,
       c: MetricsConfig

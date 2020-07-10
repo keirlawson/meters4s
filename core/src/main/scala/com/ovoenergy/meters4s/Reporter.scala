@@ -14,38 +14,137 @@ import scala.jdk.CollectionConverters._
 import scala.collection.mutable
 import java.util.concurrent.atomic.AtomicInteger
 
+/**
+  * Specify generic configuration accross a series of metrics
+  *
+  * @constructor create a new configuration instance
+  * @param prefix a common prefix to be applied to all associated metric names
+  * @param tags common tags to be applied to all associated metrics
+  */
 case class MetricsConfig(
     prefix: String = "",
     tags: Map[String, String] = Map.empty
 )
 
+/**
+  * A generic metrics reporter
+  */
 trait Reporter[F[_]] {
+
+  /**
+    * Create a counter
+    *
+    * @param name the counter's name
+    * @param tags tags associated with this counter
+    * @return an effect that evaluates to a counter instance
+    */
   def counter(
       name: String,
       tags: Map[String, String] = Map.empty
   ): F[Counter[F]]
+
+  /**
+    * Create a timer
+    *
+    * @param name the timer's name
+    * @param tags tags associated with this timer
+    * @return an effect that evaluates to a timer instance
+    */
   def timer(name: String, tags: Map[String, String] = Map.empty): F[Timer[F]]
+
+  /**
+    * Create a gauge
+    *
+    * @param name the gauge's name
+    * @param tags tags associated with this gauge
+    * @return an effect that evaluates to a gauge instance
+    */
   def gauge(name: String, tags: Map[String, String] = Map.empty): F[Gauge[F]]
 }
 
 object Reporter {
+
+  /**
+    * A generic event counter
+    */
   trait Counter[F[_]] {
+
+    /**
+      * Increment this counter by 1
+      */
     def increment: F[Unit] = this.incrementN(1)
+
+    /**
+      * Increment this counter be the specified amount
+      *
+      * @param amount the amount to increment the counter by
+      */
     def incrementN(amount: Double): F[Unit]
+
+    /**
+      * Get the current value of the counter
+      *
+      * @return an effect evaluating to the current value of the counter
+      */
     def count: F[Double]
   }
 
+  /**
+    * A generic timer for measuring short duration event latencies
+    */
   trait Timer[F[_]] {
+
+    /**
+      * Record a timing against this timer
+      *
+      * @param d the amount of time to record
+      */
     def record(d: FiniteDuration): F[Unit]
+
+    /**
+      * Wrap an effect evaluation in a timer, timing the latency of evaluating the resulting effect
+      *
+      * @param f an effect to be timed
+      * @return a timer-wrapped effect
+      */
     def wrap[A](f: F[A]): F[A]
+
+    /**
+      * Get the current event count for this timer
+      *
+      * @return an effect evaluating to the current event count of the timer
+      */
     def count: F[Long]
   }
 
+  /**
+    * A generic gauge for measuring and reporting a fluctuating property
+    */
   trait Gauge[F[_]] {
+
+    /**
+      * Increment this gauge by 1
+      *
+      */
     def increment: F[Unit] = incrementN(1)
+
+    /**
+      * Increment this gauge by the specified amount
+      *
+      * @param n the amount to increment the gauge by
+      */
     def incrementN(n: Int): F[Unit]
 
+    /**
+      * Decrement this gauge by 1
+      */
     def decrement: F[Unit] = incrementN(-1)
+
+    /**
+      * Deccrement this gauge by the specified amount
+      *
+      * @param n the amount to decrement the gauge by
+      */
     def decrementN(n: Int): F[Unit] = incrementN(-n)
 
     /** Run `action` with the gauge incremented before execution and decremented after termination (including error or cancelation) */
@@ -54,12 +153,25 @@ object Reporter {
 
   def apply[F[_]](implicit ev: Reporter[F]): Reporter[F] = ev
 
+  /**
+    * Create a Reporter wrapping a Micrometer SimpleMeterRegistry
+    *
+    * @param c configuration for this reporter
+    * @return an effect evaluating to an instance of the wrapping reporter
+    */
   def createSimple[F[_]: Concurrent](
       c: MetricsConfig
   ): F[Reporter[F]] = {
     fromRegistry[F](new SimpleMeterRegistry, c)
   }
 
+  /**
+    * Create a Reporter wrapping a supplied Micrometer registry
+    *
+    * @param mx a Micrometer registry
+    * @param config configuration for this reporter
+    * @return an effect evaluating to an instance of the wrapping reporter
+    */
   def fromRegistry[F[_]: Concurrent](
       mx: MeterRegistry,
       config: MetricsConfig = MetricsConfig()
