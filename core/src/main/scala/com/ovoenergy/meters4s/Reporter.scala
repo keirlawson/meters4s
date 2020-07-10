@@ -30,6 +30,7 @@ case class MetricsConfig(
   * A generic metrics reporter
   */
 trait Reporter[F[_]] {
+
   /**
     * Create a counter
     *
@@ -41,6 +42,7 @@ trait Reporter[F[_]] {
       name: String,
       tags: Map[String, String] = Map.empty
   ): F[Counter[F]]
+
   /**
     * Create a timer
     *
@@ -49,6 +51,7 @@ trait Reporter[F[_]] {
     * @return an effect that evaluates to a timer instance
     */
   def timer(name: String, tags: Map[String, String] = Map.empty): F[Timer[F]]
+
   /**
     * Create a gauge
     *
@@ -60,20 +63,24 @@ trait Reporter[F[_]] {
 }
 
 object Reporter {
+
   /**
     * A generic event counter
     */
   trait Counter[F[_]] {
+
     /**
       * Increment this counter by 1
       */
     def increment: F[Unit] = this.incrementN(1)
+
     /**
       * Increment this counter be the specified amount
       *
       * @param amount the amount to increment the counter by
       */
     def incrementN(amount: Double): F[Unit]
+
     /**
       * Get the current value of the counter
       *
@@ -86,12 +93,14 @@ object Reporter {
     * A generic timer for measuring short duration event latencies
     */
   trait Timer[F[_]] {
+
     /**
       * Record a timing against this timer
       *
       * @param d the amount of time to record
       */
     def record(d: FiniteDuration): F[Unit]
+
     /**
       * Wrap an effect evaluation in a timer, timing the latency of evaluating the resulting effect
       *
@@ -99,6 +108,7 @@ object Reporter {
       * @return a timer-wrapped effect
       */
     def wrap[A](f: F[A]): F[A]
+
     /**
       * Get the current event count for this timer
       *
@@ -111,11 +121,13 @@ object Reporter {
     * A generic gauge for measuring and reporting a fluctuating property
     */
   trait Gauge[F[_]] {
+
     /**
       * Increment this gauge by 1
       *
       */
     def increment: F[Unit] = incrementN(1)
+
     /**
       * Increment this gauge by the specified amount
       *
@@ -127,6 +139,7 @@ object Reporter {
       * Decrement this gauge by 1
       */
     def decrement: F[Unit] = incrementN(-1)
+
     /**
       * Deccrement this gauge by the specified amount
       *
