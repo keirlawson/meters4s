@@ -32,7 +32,14 @@ case class DataDogConfig(
 )
 
 package object DataDog {
-  private def createMeterRegistry[F[_]: Sync](
+
+  /**
+    * Create a Micrometer MeterRegistry
+    *
+    * @param c the configuration for reporting to Datadog
+    * @return at datadog MeterRegistry
+    */
+  def createMeterRegistry[F[_]: Sync](
       c: DataDogConfig
   ): Resource[F, MeterRegistry] = {
 

@@ -39,7 +39,13 @@ case class StatsdConfig(
 
 package object StatsD {
 
-  private def createMeterRegistry[F[_]: Sync](
+  /**
+    * Create a Micrometer MeterRegistry
+    *
+    * @param c the configuration for reporting to StatsD
+    * @return at statsD MeterRegistry
+    */
+  def createMeterRegistry[F[_]: Sync](
       c: StatsdConfig
   ): Resource[F, MeterRegistry] = {
 
