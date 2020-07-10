@@ -21,7 +21,7 @@ lazy val root = (project in file("."))
 
 lazy val commonSettings = Seq(
   organization := "com.ovoenergy",
-  version := "0.4.0",
+  version := "0.4.1",
   scalaVersion := "2.13.1",
   bintrayOrganization := Some("ovotech"),
   bintrayRepository := "maven-private",
