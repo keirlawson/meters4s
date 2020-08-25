@@ -24,7 +24,7 @@ lazy val commonSettings = Seq(
   version := "0.4.1",
   scalaVersion := "2.13.1",
   bintrayOrganization := Some("ovotech"),
-  bintrayRepository := "maven-private",
+  bintrayRepository := "maven",
   bintrayOmitLicense := true,
   addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.10.3"),
   addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
