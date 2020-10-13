@@ -121,6 +121,19 @@ class ReporterTest(implicit ec: ExecutionContext) extends Specification {
       registry.timer("test.timer").totalTime(TimeUnit.SECONDS) must_== 10
     }
 
+    "record should record the supplied percentiles" >> {
+      val registry = new SimpleMeterRegistry
+      val reporter = Reporter.fromRegistry[IO](registry).unsafeRunSync()
+
+      val percentiles = Set(0.95D, 0.99D)
+      val testee = reporter.timer("test.timer", percentiles = percentiles)
+      testee
+        .flatMap(_.record(FiniteDuration(10, TimeUnit.SECONDS)))
+        .unsafeRunSync()
+
+      registry.timer("test.timer").takeSnapshot().percentileValues().map(_.percentile()).toSet must_== percentiles
+    }
+
     "wrap must time the wrapped task" >> {
       val mockClock = new MockClock
       val registry = new SimpleMeterRegistry(SimpleConfig.DEFAULT, mockClock)
