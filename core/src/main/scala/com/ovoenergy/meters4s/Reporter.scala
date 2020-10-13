@@ -50,7 +50,7 @@ trait Reporter[F[_]] {
     * @param tags tags associated with this timer
     * @return an effect that evaluates to a timer instance
     */
-  def timer(name: String, tags: Map[String, String] = Map.empty): F[Timer[F]]
+  def timer(name: String, tags: Map[String, String] = Map.empty, percentiles: Set[Double] = Set.empty): F[Timer[F]]
 
   /**
     * Create a gauge
@@ -230,11 +230,12 @@ private class MeterRegistryReporter[F[_]](
         }
       }
 
-  def timer(name: String, tags: Map[String, String]): F[Timer[F]] =
+  def timer(name: String, tags: Map[String, String], percentiles: Set[Double]): F[Timer[F]] =
     F.delay {
         micrometer.Timer
           .builder(metricName(name))
           .tags(effectiveTags(tags))
+          .publishPercentiles(percentiles.toSeq:_*)
           .register(mx)
       }
       .map { t =>
