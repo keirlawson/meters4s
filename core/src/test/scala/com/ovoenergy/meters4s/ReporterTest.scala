@@ -125,13 +125,18 @@ class ReporterTest(implicit ec: ExecutionContext) extends Specification {
       val registry = new SimpleMeterRegistry
       val reporter = Reporter.fromRegistry[IO](registry).unsafeRunSync()
 
-      val percentiles = Set(0.95D, 0.99D)
+      val percentiles = Set(0.95d, 0.99d)
       val testee = reporter.timer("test.timer", percentiles = percentiles)
       testee
         .flatMap(_.record(FiniteDuration(10, TimeUnit.SECONDS)))
         .unsafeRunSync()
 
-      registry.timer("test.timer").takeSnapshot().percentileValues().map(_.percentile()).toSet must_== percentiles
+      registry
+        .timer("test.timer")
+        .takeSnapshot()
+        .percentileValues()
+        .map(_.percentile())
+        .toSet must_== percentiles
     }
 
     "wrap must time the wrapped task" >> {
