@@ -1,3 +1,19 @@
+/*
+ * Copyright 2020 OVO Energy
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.ovoenergy.meters4s
 
 import cats.effect.{Sync, Concurrent}
@@ -50,7 +66,11 @@ trait Reporter[F[_]] {
     * @param tags tags associated with this timer
     * @return an effect that evaluates to a timer instance
     */
-  def timer(name: String, tags: Map[String, String] = Map.empty, percentiles: Set[Double] = Set.empty): F[Timer[F]]
+  def timer(
+      name: String,
+      tags: Map[String, String] = Map.empty,
+      percentiles: Set[Double] = Set.empty
+  ): F[Timer[F]]
 
   /**
     * Create a gauge
@@ -230,12 +250,16 @@ private class MeterRegistryReporter[F[_]](
         }
       }
 
-  def timer(name: String, tags: Map[String, String], percentiles: Set[Double]): F[Timer[F]] =
+  def timer(
+      name: String,
+      tags: Map[String, String],
+      percentiles: Set[Double]
+  ): F[Timer[F]] =
     F.delay {
         micrometer.Timer
           .builder(metricName(name))
           .tags(effectiveTags(tags))
-          .publishPercentiles(percentiles.toSeq:_*)
+          .publishPercentiles(percentiles.toSeq: _*)
           .register(mx)
       }
       .map { t =>

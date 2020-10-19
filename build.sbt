@@ -1,4 +1,6 @@
-lazy val supportedScalaVersions = List("2.12.11", "2.13.3")
+lazy val additionalSupportedScalaVersions = List("2.12.11")
+
+ThisBuild / dynverVTagPrefix := false
 
 lazy val root = (project in file("."))
   .settings(
@@ -21,14 +23,31 @@ lazy val root = (project in file("."))
 
 lazy val commonSettings = Seq(
   organization := "com.ovoenergy",
-  version := "0.4.1",
   scalaVersion := "2.13.1",
+  crossScalaVersions ++= additionalSupportedScalaVersions,
   bintrayOrganization := Some("ovotech"),
   bintrayRepository := "maven",
-  bintrayOmitLicense := true,
+  organizationName := "OVO Energy",
+  organizationHomepage := Some(url("https://www.ovoenergy.com/")),
+  homepage := Some(url("https://github.com/ovotech/meters4s")),
+  startYear := Some(2020),
+  licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0"))),
+  scmInfo := Some(
+    ScmInfo(
+      url("https://github.com/ovotech/meters4s"),
+      "git@github.com:ovotech/meters4s.git"
+    )
+  ),  
+  developers := List(
+    Developer(
+      "keirlawson",
+      "Keir Lawson",
+      "keir,lawson@ovoenergy.com",
+      url("https://github.com/keirlawson")
+    )
+  ),
   addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.10.3"),
-  addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1"),
-  crossScalaVersions := supportedScalaVersions
+  addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")
 )
 
 lazy val commonDependencies = Seq(

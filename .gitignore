@@ -5,3 +5,4 @@ project/metals.sbt
 project/project/
 .idea/
 .vscode/
+.bsp/
