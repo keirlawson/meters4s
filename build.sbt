@@ -1,6 +1,17 @@
 lazy val additionalSupportedScalaVersions = List("2.12.11")
 
 ThisBuild / dynverVTagPrefix := false
+ThisBuild / bintrayOrganization := Some("ovotech")
+ThisBuild / bintrayRepository := "maven"
+ThisBuild / bintrayPackageLabels := Seq(
+  "cats-effect",
+  "micrometer",
+  "metrics",
+  "scala",
+)
+ThisBuild / releaseEarlyWith := BintrayPublisher
+ThisBuild / releaseEarlyNoGpg := true
+ThisBuild / releaseEarlyEnableSyncToMaven := false
 
 lazy val root = (project in file("."))
   .settings(
@@ -14,7 +25,8 @@ lazy val root = (project in file("."))
       siteSubdirName in ScalaUnidoc
     ),
     crossScalaVersions := Nil,
-    publish / skip := true
+    publish / skip := true,
+    publishArtifact := false
   )
   .enablePlugins(GhpagesPlugin)
   .enablePlugins(SiteScaladocPlugin)
@@ -25,8 +37,6 @@ lazy val commonSettings = Seq(
   organization := "com.ovoenergy",
   scalaVersion := "2.13.1",
   crossScalaVersions ++= additionalSupportedScalaVersions,
-  bintrayOrganization := Some("ovotech"),
-  bintrayRepository := "maven",
   organizationName := "OVO Energy",
   organizationHomepage := Some(url("https://www.ovoenergy.com/")),
   homepage := Some(url("https://github.com/ovotech/meters4s")),
@@ -94,7 +104,9 @@ lazy val docs = project
     mdocOut := file("README.md"),
     mdocVariables := Map(
       "VERSION" -> version.value
-    )
+    ),
+    publish / skip := true,
+    publishArtifact := false
   )
   .dependsOn(datadog)
   .enablePlugins(MdocPlugin)
