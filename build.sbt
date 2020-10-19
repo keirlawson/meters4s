@@ -1,5 +1,7 @@
 lazy val additionalSupportedScalaVersions = List("2.12.11")
 
+ThisBuild / dynverVTagPrefix := false
+
 lazy val root = (project in file("."))
   .settings(
     name := "meters4s",
