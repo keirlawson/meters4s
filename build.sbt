@@ -1,18 +1,5 @@
 lazy val additionalSupportedScalaVersions = List("2.12.11")
 
-ThisBuild / dynverVTagPrefix := false
-ThisBuild / bintrayOrganization := Some("ovotech")
-ThisBuild / bintrayRepository := "maven"
-ThisBuild / bintrayPackageLabels := Seq(
-  "cats-effect",
-  "micrometer",
-  "metrics",
-  "scala",
-)
-ThisBuild / releaseEarlyWith := BintrayPublisher
-ThisBuild / releaseEarlyNoGpg := true
-ThisBuild / releaseEarlyEnableSyncToMaven := false
-
 lazy val root = (project in file("."))
   .settings(
     name := "meters4s",
@@ -36,6 +23,7 @@ lazy val root = (project in file("."))
 lazy val commonSettings = Seq(
   organization := "com.ovoenergy",
   scalaVersion := "2.13.1",
+  dynverVTagPrefix := false,
   crossScalaVersions ++= additionalSupportedScalaVersions,
   organizationName := "OVO Energy",
   organizationHomepage := Some(url("https://www.ovoenergy.com/")),
@@ -60,6 +48,20 @@ lazy val commonSettings = Seq(
   addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")
 )
 
+lazy val publishSettings = Seq(
+  ThisBuild / bintrayOrganization := Some("ovotech"),
+  ThisBuild / bintrayRepository := "maven",
+  ThisBuild / bintrayPackageLabels := Seq(
+    "cats-effect",
+    "micrometer",
+    "metrics",
+    "scala",
+  ),
+  ThisBuild / releaseEarlyWith := BintrayPublisher,
+  ThisBuild / releaseEarlyNoGpg := true,
+  ThisBuild / releaseEarlyEnableSyncToMaven := false
+)
+
 lazy val commonDependencies = Seq(
   "org.typelevel" %% "cats-core" % "2.1.1",
   "org.typelevel" %% "cats-effect" % "2.1.2",
@@ -74,6 +76,7 @@ lazy val core = project
   .settings(
     name := "meters4s",
     commonSettings,
+    publishSettings,
     libraryDependencies ++= commonDependencies
   )
 
@@ -81,6 +84,7 @@ lazy val datadog = project
   .settings(
     name := "meters4s-datadog",
     commonSettings,
+    publishSettings,
     libraryDependencies ++= commonDependencies ++ Seq(
       "io.micrometer" % "micrometer-registry-datadog" % "1.4.1"
     )
@@ -91,6 +95,7 @@ lazy val statsd = project
   .settings(
     name := "meters4s-statsd",
     commonSettings,
+    publishSettings,
     libraryDependencies ++= commonDependencies ++ Seq(
       "io.micrometer" % "micrometer-registry-statsd" % "1.4.1"
     )
