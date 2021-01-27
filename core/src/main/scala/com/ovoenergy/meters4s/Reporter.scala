@@ -79,7 +79,11 @@ trait Reporter[F[_]] {
     * @param tags tags associated with this gauge
     * @return an effect that evaluates to a gauge instance
     */
-  def gauge(name: String, tags: Map[String, String] = Map.empty): F[Gauge[F]]
+  def gauge(
+      name: String,
+      tags: Map[String, String] = Map.empty,
+      initialValue: Int = 0
+  ): F[Gauge[F]]
 }
 
 object Reporter {
@@ -142,30 +146,38 @@ object Reporter {
     */
   trait Gauge[F[_]] {
 
+    def modify(f: Int => Int): F[Unit]
+
+    /**
+      * Set this gauge value
+      *
+      */
+    def set(value: Int): F[Unit] = modify(_ => value)
+
     /**
       * Increment this gauge by 1
       *
       */
-    def increment: F[Unit] = incrementN(1)
+    def increment: F[Unit] = modify(_ + 1)
 
     /**
       * Increment this gauge by the specified amount
       *
       * @param n the amount to increment the gauge by
       */
-    def incrementN(n: Int): F[Unit]
+    def incrementN(n: Int): F[Unit] = modify(_ + n)
 
     /**
       * Decrement this gauge by 1
       */
-    def decrement: F[Unit] = incrementN(-1)
+    def decrement: F[Unit] = modify(_ - 1)
 
     /**
       * Deccrement this gauge by the specified amount
       *
       * @param n the amount to decrement the gauge by
       */
-    def decrementN(n: Int): F[Unit] = incrementN(-n)
+    def decrementN(n: Int): F[Unit] = modify(_ - n)
 
     /** Run `action` with the gauge incremented before execution and decremented after termination (including error or cancelation) */
     def surround[A](action: F[A]): F[A]
@@ -280,20 +292,26 @@ private class MeterRegistryReporter[F[_]](
 
   private def registerGauge(
       name: String,
-      tags: java.lang.Iterable[Tag]
-  ): F[AtomicInteger] = F.delay(new AtomicInteger()).flatTap { gauge =>
-    F.delay(
-      micrometer.Gauge
-        .builder(
-          name,
-          gauge, { i: AtomicInteger => i.doubleValue }
-        )
-        .tags(tags)
-        .register(mx)
-    )
+      tags: java.lang.Iterable[Tag],
+      initialValue: Int
+  ): F[AtomicInteger] = F.delay(new AtomicInteger(initialValue)).flatTap {
+    gauge =>
+      F.delay(
+        micrometer.Gauge
+          .builder(
+            name,
+            gauge, { i: AtomicInteger => i.doubleValue }
+          )
+          .tags(tags)
+          .register(mx)
+      )
   }
 
-  def gauge(name: String, tags: Map[String, String]): F[Gauge[F]] = {
+  def gauge(
+      name: String,
+      tags: Map[String, String],
+      initialValue: Int
+  ): F[Gauge[F]] = {
     val pname = metricName(name)
     val allTags = effectiveTags(tags)
     val gaugeKey = new GaugeKey(pname, allTags)
@@ -302,15 +320,19 @@ private class MeterRegistryReporter[F[_]](
       activeGauges
         .get(gaugeKey)
         .fold {
-          registerGauge(pname, allTags)
+          registerGauge(pname, allTags, initialValue)
             .flatTap(g => F.delay(activeGauges.put(gaugeKey, g)))
         }(_.pure[F])
     )
 
     gaugeValue.map { counter =>
       new Gauge[F] {
-        def incrementN(n: Int): F[Unit] =
-          F.delay(counter.getAndAdd(n)).void
+
+        def modify(f: Int => Int): F[Unit] =
+          F.delay {
+            counter.getAndUpdate(x => f(x))
+            ()
+          }
 
         def surround[A](action: F[A]): F[A] =
           increment.bracket(_ => action)(_ => decrement)
