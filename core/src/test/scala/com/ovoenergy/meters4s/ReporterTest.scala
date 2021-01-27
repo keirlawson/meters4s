@@ -251,6 +251,27 @@ class ReporterTest(implicit ec: ExecutionContext) extends Specification {
   }
 
   "gauge" >> {
+
+    "set should set the gauge value" >> {
+      val registry = new SimpleMeterRegistry
+      val reporter = Reporter.fromRegistry[IO](registry).unsafeRunSync()
+
+      val testee = reporter.gauge("test.gauge")
+      testee.flatMap(_.set(10)).unsafeRunSync()
+
+      registry.find("test.gauge").gauge().value must_== 10
+    }
+
+    "modify should modify the gauge value" >> {
+      val registry = new SimpleMeterRegistry
+      val reporter = Reporter.fromRegistry[IO](registry).unsafeRunSync()
+
+      val testee = reporter.gauge("test.gauge", initialValue = 8)
+      testee.flatMap(_.modify(_ + 4)).unsafeRunSync()
+
+      registry.find("test.gauge").gauge().value must_== 12
+    }
+
     "increment should increment the gauge" >> {
       val registry = new SimpleMeterRegistry
       val reporter = Reporter.fromRegistry[IO](registry).unsafeRunSync()
