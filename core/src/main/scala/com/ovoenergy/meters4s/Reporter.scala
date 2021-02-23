@@ -52,7 +52,7 @@ trait Sample[F[_]] {
     *
     * @return the timing in nanoseconds
     */
-  def stop(): F[Long]
+  def stop: F[Long]
 }
 
 /**
@@ -143,7 +143,7 @@ object Reporter {
       *
       * @return an effect evaluating to a Sample instance that can be used to stop recording
       */
-    def start(): F[Sample[F]]
+    def start: F[Sample[F]]
 
     /**
       * Wrap an effect evaluation in a timer, timing the latency of evaluating the resulting effect
@@ -299,18 +299,18 @@ private class MeterRegistryReporter[F[_]](
           def record(d: FiniteDuration) =
             F.delay(t.record(d.toMillis, MILLISECONDS))
 
-          def start() = F.delay {
+          def start = F.delay {
             val internal = micrometer.Timer.start(mx)
             new Sample[F] {
-              def stop(): F[Long] = F.delay(internal.stop(t))
+              def stop: F[Long] = F.delay(internal.stop(t))
             }
           }
 
           def wrap[A](f: F[A]): F[A] =
             for {
-              sample <- start()
+              sample <- start
               a <- f
-              _ <- sample.stop()
+              _ <- sample.stop
             } yield a
 
           def count: F[Long] = F.delay(t.count())
