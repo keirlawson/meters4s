@@ -79,7 +79,7 @@ package object DataDog {
             .builder(datadogConfig)
             .build
         )
-      )(toStop => Sync[F].delay(toStop.stop))
+      )(toClose => Sync[F].delay(toClose.close))
       .widen[MeterRegistry]
 
   }
