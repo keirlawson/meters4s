@@ -1,3 +1,7 @@
+import sbtrelease.ExtraReleaseCommands
+import sbtrelease.ReleaseStateTransformations._
+import sbtrelease.tagsonly.TagsOnly._
+
 lazy val additionalSupportedScalaVersions = List("2.12.11")
 
 ThisBuild / dynverVTagPrefix := false
@@ -50,18 +54,25 @@ lazy val commonSettings = Seq(
   addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")
 )
 
+lazy val publicArtifactory = "Artifactory Realm" at "https://kaluza.jfrog.io/artifactory/maven"
+
 lazy val publishSettings = Seq(
-  ThisBuild / bintrayOrganization := Some("ovotech"),
-  ThisBuild / bintrayRepository := "maven",
-  ThisBuild / bintrayPackageLabels := Seq(
-    "cats-effect",
-    "micrometer",
-    "metrics",
-    "scala",
-  ),
-  ThisBuild / releaseEarlyWith := BintrayPublisher,
-  ThisBuild / releaseEarlyNoGpg := true,
-  ThisBuild / releaseEarlyEnableSyncToMaven := false
+  publishTo := Some(publicArtifactory),
+  credentials += {
+    for {
+      usr <- sys.env.get("ARTIFACTORY_USER")
+      password <- sys.env.get("ARTIFACTORY_PASS")
+    } yield Credentials("Artifactory Realm", "kaluza.jfrog.io", usr, password)
+  }.getOrElse(Credentials(Path.userHome / ".ivy2" / ".credentials")),
+  releaseProcess := Seq[ReleaseStep](
+    checkSnapshotDependencies,
+    releaseStepCommand(ExtraReleaseCommands.initialVcsChecksCommand),
+    setVersionFromTags(releaseTagPrefix.value),
+    runClean,
+    tagRelease,
+    publishArtifacts,
+    pushTagsOnly
+  )
 )
 
 lazy val commonDependencies = Seq(
