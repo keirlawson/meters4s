@@ -6,11 +6,11 @@ for counters, timers, gauges and distributions.
 
 ## Install
 
-Presently this library resides in the ovotech `maven` bintray which can be added yo your build.sbt with
+Presently this library resides in the kaluza `maven` artifactory which can be added yo your build.sbt with
 
 ```scala
 resolvers ++= Seq(
-    Resolver.bintrayRepo("ovotech", "maven")
+  "Artifactory Realm" at "https://kaluza.jfrog.io/artifactory/maven"
 )
 ```
 
