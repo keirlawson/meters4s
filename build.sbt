@@ -35,13 +35,15 @@ lazy val commonSettings = Seq(
   organizationHomepage := Some(url("https://www.ovoenergy.com/")),
   homepage := Some(url("https://github.com/ovotech/meters4s")),
   startYear := Some(2020),
-  licenses := Seq(("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0"))),
+  licenses := Seq(
+    ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0"))
+  ),
   scmInfo := Some(
     ScmInfo(
       url("https://github.com/ovotech/meters4s"),
       "git@github.com:ovotech/meters4s.git"
     )
-  ),  
+  ),
   developers := List(
     Developer(
       "keirlawson",
@@ -54,7 +56,8 @@ lazy val commonSettings = Seq(
   addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")
 )
 
-lazy val publicArtifactory = "Artifactory Realm" at "https://kaluza.jfrog.io/artifactory/maven"
+lazy val publicArtifactory =
+  "Artifactory Realm" at "https://kaluza.jfrog.io/artifactory/maven"
 
 lazy val publishSettings = Seq(
   publishTo := Some(publicArtifactory),
@@ -76,8 +79,8 @@ lazy val publishSettings = Seq(
 )
 
 lazy val commonDependencies = Seq(
-  "org.typelevel" %% "cats-core" % "2.1.1",
-  "org.typelevel" %% "cats-effect" % "2.1.2",
+  "org.typelevel" %% "cats-core" % "2.6.0",
+  "org.typelevel" %% "cats-effect" % "2.5.0",
   "org.specs2" %% "specs2-core" % "4.8.3" % "test",
   "io.micrometer" % "micrometer-core" % "1.4.1",
   "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.6",

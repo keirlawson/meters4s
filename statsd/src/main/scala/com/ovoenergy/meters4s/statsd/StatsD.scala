@@ -107,6 +107,6 @@ package object StatsD {
   ): Resource[F, Reporter[F]] = {
     val reg = createMeterRegistry[F](config)
 
-    reg.flatMap(registry => Resource.liftF(Reporter.fromRegistry(registry, c)))
+    reg.flatMap(registry => Resource.eval(Reporter.fromRegistry(registry, c)))
   }
 }

@@ -97,7 +97,7 @@ package object DataDog {
     val reg = createMeterRegistry[F](dataDogConfig)
 
     reg.flatMap(registry =>
-      Resource.liftF(Reporter.fromRegistry[F](registry, c))
+      Resource.eval(Reporter.fromRegistry[F](registry, c))
     )
   }
 }
