@@ -115,35 +115,6 @@ jobs:
       - unit_test:
           module_name: statsd
 
-  tag:
-    executor: docker
-
-    steps:
-      - checkout
-      - attach_workspace:
-          at: .
-      - add_github_host_ssh_key
-      - configure_git_credentials
-      - run: build/tag.sh
-      # Update the workspace to make sure the git tags are available to the
-      # downstream jobs
-      - persist_to_workspace:
-          root: .
-          paths:
-            - .git
-
-  release:
-    executor: docker
-
-    steps:
-      - checkout
-      - attach_workspace:
-          at: .
-      - restore_sbt_cache
-      - run:
-          command: sbt +publish
-          no_output_timeout: 20m
-
 workflows:
   main:
     jobs:
@@ -160,17 +131,3 @@ workflows:
       - statsd_unit_test:
           requires:
             - build
-
-      - tag:
-          requires:
-            - core_unit_test
-            - datadog_unit_test
-            - statsd_unit_test
-          filters:
-            branches:
-              only: master
-
-      - release:
-          context: comms-internal-build
-          requires:
-            - tag

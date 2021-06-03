@@ -1,10 +1,6 @@
-import sbtrelease.ExtraReleaseCommands
-import sbtrelease.ReleaseStateTransformations._
-import sbtrelease.tagsonly.TagsOnly._
+import ReleaseTransformations._
 
 lazy val additionalSupportedScalaVersions = List("2.12.11")
-
-ThisBuild / dynverVTagPrefix := false
 
 lazy val root = (project in file("."))
   .settings(
@@ -29,7 +25,6 @@ lazy val root = (project in file("."))
 lazy val commonSettings = Seq(
   organization := "com.ovoenergy",
   scalaVersion := "2.13.1",
-  dynverVTagPrefix := false,
   crossScalaVersions ++= additionalSupportedScalaVersions,
   organizationName := "OVO Energy",
   organizationHomepage := Some(url("https://www.ovoenergy.com/")),
@@ -56,25 +51,23 @@ lazy val commonSettings = Seq(
   addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")
 )
 
-lazy val publicArtifactory =
-  "Artifactory Realm" at "https://kaluza.jfrog.io/artifactory/maven"
-
 lazy val publishSettings = Seq(
-  publishTo := Some(publicArtifactory),
-  credentials += {
-    for {
-      usr <- sys.env.get("ARTIFACTORY_USER")
-      password <- sys.env.get("ARTIFACTORY_PASS")
-    } yield Credentials("Artifactory Realm", "kaluza.jfrog.io", usr, password)
-  }.getOrElse(Credentials(Path.userHome / ".ivy2" / ".credentials")),
+  publishTo := sonatypePublishToBundle.value,
+  sonatypeProfileName := "com.ovoenergy",
+  publishMavenStyle := true,
   releaseProcess := Seq[ReleaseStep](
     checkSnapshotDependencies,
-    releaseStepCommand(ExtraReleaseCommands.initialVcsChecksCommand),
-    setVersionFromTags(releaseTagPrefix.value),
+    inquireVersions,
     runClean,
+    runTest,
+    setReleaseVersion,
+    commitReleaseVersion,
     tagRelease,
-    publishArtifacts,
-    pushTagsOnly
+    releaseStepCommandAndRemaining("+publishSigned"),
+    releaseStepCommand("sonatypeBundleRelease"),
+    setNextVersion,
+    commitNextVersion,
+    pushChanges
   )
 )
 
