@@ -73,7 +73,7 @@ lazy val publishSettings = Seq(
 
 lazy val commonDependencies = Seq(
   "org.typelevel" %% "cats-core" % "2.6.0",
-  "org.typelevel" %% "cats-effect" % "2.5.0",
+  "org.typelevel" %% "cats-effect" % "3.1.0",
   "org.specs2" %% "specs2-core" % "4.8.3" % "test",
   "io.micrometer" % "micrometer-core" % "1.4.1",
   "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.6",

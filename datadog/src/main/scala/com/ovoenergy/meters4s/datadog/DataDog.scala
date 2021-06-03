@@ -26,7 +26,7 @@ import io.micrometer.datadog.{DatadogConfig => MmDatadogConfig}
 import com.ovoenergy.meters4s.{MetricsConfig, Reporter}
 
 import scala.concurrent.duration.FiniteDuration
-import cats.effect.Concurrent
+import cats.effect.Async
 
 /**
   * Configuration to be passed to the underlying Micrometer DatadogMeterRegistry
@@ -90,7 +90,7 @@ package object DataDog {
     * @param dataDogConfig the configuration for reporting to Datadog
     * @param c the generic configuration to be applied to any produced metrics
     */
-  def createReporter[F[_]: Concurrent](
+  def createReporter[F[_]: Async](
       dataDogConfig: DataDogConfig,
       c: MetricsConfig
   ): Resource[F, Reporter[F]] = {

@@ -16,10 +16,10 @@
 
 package com.ovoenergy.meters4s
 
-import cats.effect.{Sync, Concurrent}
+import cats.effect.{Sync, Async}
 import cats.implicits._
 import cats.effect.implicits._
-import cats.effect.concurrent.Semaphore
+import cats.effect.std.Semaphore
 import Reporter.{Counter, Timer, Gauge}
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import io.micrometer.core.instrument.{MeterRegistry, Tag}
@@ -211,7 +211,7 @@ object Reporter {
     * @param c configuration for this reporter
     * @return an effect evaluating to an instance of the wrapping reporter
     */
-  def createSimple[F[_]: Concurrent](
+  def createSimple[F[_]: Async](
       c: MetricsConfig
   ): F[Reporter[F]] = {
     fromRegistry[F](new SimpleMeterRegistry, c)
@@ -224,7 +224,7 @@ object Reporter {
     * @param config configuration for this reporter
     * @return an effect evaluating to an instance of the wrapping reporter
     */
-  def fromRegistry[F[_]: Concurrent](
+  def fromRegistry[F[_]: Async](
       mx: MeterRegistry,
       config: MetricsConfig = MetricsConfig()
   ): F[Reporter[F]] =
@@ -343,7 +343,7 @@ private class MeterRegistryReporter[F[_]](
     val allTags = effectiveTags(tags)
     val gaugeKey = new GaugeKey(pname, allTags)
 
-    val gaugeValue: F[AtomicInteger] = gaugeSem.withPermit(
+    val gaugeValue: F[AtomicInteger] = gaugeSem.permit.use(_ =>
       activeGauges
         .get(gaugeKey)
         .fold {

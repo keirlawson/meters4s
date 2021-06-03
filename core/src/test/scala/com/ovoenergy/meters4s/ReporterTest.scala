@@ -25,11 +25,9 @@ import scala.concurrent.duration.FiniteDuration
 import java.util.concurrent.TimeUnit
 import io.micrometer.core.instrument.simple.SimpleConfig
 import io.micrometer.core.instrument.MockClock
-import scala.concurrent.ExecutionContext
+import cats.effect.unsafe.implicits.global
 
-class ReporterTest(implicit ec: ExecutionContext) extends Specification {
-
-  implicit val cs = IO.contextShift(ec)
+class ReporterTest extends Specification {
 
   "counter" >> {
     "increment should increment underlying counter" >> {

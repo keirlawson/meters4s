@@ -16,7 +16,7 @@
 
 package com.ovoenergy.meters4s.statsd
 
-import cats.effect.{Resource, Sync, Concurrent}
+import cats.effect.{Resource, Sync, Async}
 import com.ovoenergy.meters4s.{MetricsConfig, Reporter}
 import io.micrometer.statsd.{StatsdConfig => MmStatsdConfig}
 import io.micrometer.core.instrument.MeterRegistry
@@ -101,7 +101,7 @@ package object StatsD {
     * @param config the configuration for reporting to StatsD
     * @param c the generic configuration to be applied to any produced metrics
     */
-  def createReporter[F[_]: Concurrent](
+  def createReporter[F[_]: Async](
       config: StatsdConfig,
       c: MetricsConfig
   ): Resource[F, Reporter[F]] = {
