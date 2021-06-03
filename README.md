@@ -6,19 +6,13 @@ for counters, timers, gauges and distributions.
 
 ## Install
 
-Presently this library resides in the kaluza `maven` artifactory which can be added yo your build.sbt with
-
-```scala
-resolvers ++= Seq(
-  "Artifactory Realm" at "https://kaluza.jfrog.io/artifactory/maven"
-)
-```
-
 Add the following depdency to your `build.sbt`:
 
 ```scala
-libraryDependencies += "com.ovoenergy" %% "meters4s" % "0.4.6"
+libraryDependencies += "com.ovoenergy" %% "meters4s" % "1.0.0"
 ```
+
+Or for Cats Effect 2.x use the 0.4.x series.
 
 You will likely also want to add the module corresponding to whichever monitoring system you want to report metrics to.  All 
 systems supported by micrometer can be used by brining in the corresponding micormeter dependecy and then using 
@@ -28,13 +22,13 @@ For developer convience we also provide a couple of modules for particular monit
 StatsD to provide and ergonomic means for creating reporters for these registries.  These can be added to your poject as follows:
 
 ```scala
-libraryDependencies += "com.ovoenergy" %% "meters4s-datadog" % "0.4.6"
+libraryDependencies += "com.ovoenergy" %% "meters4s-datadog" % "1.0.0"
 ```
 
 or
 
 ```scala
-libraryDependencies += "com.ovoenergy" %% "meters4s-statsd" % "0.4.6"
+libraryDependencies += "com.ovoenergy" %% "meters4s-statsd" % "1.0.0"
 ```
 
 ## Usage
@@ -46,9 +40,6 @@ A simple usage example for incrementing a counter, backed by a Micrometer `Simpl
 ```scala
 import com.ovoenergy.meters4s.{Reporter, MetricsConfig}
 import cats.effect.IO
-import scala.concurrent.ExecutionContext.Implicits.global
-
-implicit val cs = IO.contextShift(global)
 
 val config = MetricsConfig()
 for {
