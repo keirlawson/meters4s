@@ -15,7 +15,21 @@ lazy val root = (project in file("."))
     ),
     crossScalaVersions := Nil,
     publish / skip := true,
-    publishArtifact := false
+    publishArtifact := false,
+    releaseProcess := Seq[ReleaseStep](
+      checkSnapshotDependencies,
+      inquireVersions,
+      runClean,
+      runTest,
+      setReleaseVersion,
+      commitReleaseVersion,
+      tagRelease,
+      releaseStepCommandAndRemaining("+publishSigned"),
+      releaseStepCommand("sonatypeBundleRelease"),
+      setNextVersion,
+      commitNextVersion,
+      pushChanges
+    )
   )
   .enablePlugins(GhpagesPlugin)
   .enablePlugins(SiteScaladocPlugin)
@@ -54,21 +68,7 @@ lazy val commonSettings = Seq(
 lazy val publishSettings = Seq(
   publishTo := sonatypePublishToBundle.value,
   sonatypeProfileName := "com.ovoenergy",
-  publishMavenStyle := true,
-  releaseProcess := Seq[ReleaseStep](
-    checkSnapshotDependencies,
-    inquireVersions,
-    runClean,
-    runTest,
-    setReleaseVersion,
-    commitReleaseVersion,
-    tagRelease,
-    releaseStepCommandAndRemaining("+publishSigned"),
-    releaseStepCommand("sonatypeBundleRelease"),
-    setNextVersion,
-    commitNextVersion,
-    pushChanges
-  )
+  publishMavenStyle := true
 )
 
 lazy val commonDependencies = Seq(
