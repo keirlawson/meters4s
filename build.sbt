@@ -38,7 +38,7 @@ lazy val root = (project in file("."))
 
 lazy val commonSettings = Seq(
   organization := "com.ovoenergy",
-  scalaVersion := "2.13.1",
+  scalaVersion := "2.13.7",
   crossScalaVersions ++= additionalSupportedScalaVersions,
   organizationName := "OVO Energy",
   organizationHomepage := Some(url("https://www.ovoenergy.com/")),
@@ -72,11 +72,11 @@ lazy val publishSettings = Seq(
 )
 
 lazy val commonDependencies = Seq(
-  "org.typelevel" %% "cats-core" % "2.6.0",
-  "org.typelevel" %% "cats-effect" % "3.1.0",
-  "org.specs2" %% "specs2-core" % "4.8.3" % "test",
+  "org.typelevel" %% "cats-core" % "2.6.1",
+  "org.typelevel" %% "cats-effect" % "3.2.9",
+  "org.specs2" %% "specs2-core" % "4.12.12" % "test",
   "io.micrometer" % "micrometer-core" % "1.4.1",
-  "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.6",
+  "org.scala-lang.modules" %% "scala-collection-compat" % "2.6.0",
   // See https://github.com/micrometer-metrics/micrometer/issues/1133#issuecomment-452434205
   "com.google.code.findbugs" % "jsr305" % "3.0.2" % Optional
 )
