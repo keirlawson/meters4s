@@ -8,10 +8,10 @@ lazy val root = (project in file("."))
     commonSettings,
     libraryDependencies ++= commonDependencies,
     git.remoteRepo := "git@github.com:ovotech/meters4s.git",
-    siteSubdirName in ScalaUnidoc := "latest/api",
+    ScalaUnidoc / siteSubdirName := "latest/api",
     addMappingsToSiteDir(
       mappings in (ScalaUnidoc, packageDoc),
-      siteSubdirName in ScalaUnidoc
+      ScalaUnidoc / siteSubdirName
     ),
     crossScalaVersions := Nil,
     publish / skip := true,
@@ -74,7 +74,7 @@ lazy val publishSettings = Seq(
 lazy val commonDependencies = Seq(
   "org.typelevel" %% "cats-core" % "2.6.1",
   "org.typelevel" %% "cats-effect" % "3.2.9",
-  "org.specs2" %% "specs2-core" % "4.12.12" % "test",
+  "org.typelevel" %% "munit-cats-effect-3" % "1.0.6" % "test",
   "io.micrometer" % "micrometer-core" % "1.4.1",
   "org.scala-lang.modules" %% "scala-collection-compat" % "2.6.0",
   // See https://github.com/micrometer-metrics/micrometer/issues/1133#issuecomment-452434205
