@@ -1,6 +1,6 @@
 addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.3.4")
 addSbtPlugin("io.github.davidgregory084" % "sbt-tpolecat" % "0.1.13")
-addSbtPlugin("org.scalameta" % "sbt-mdoc" % "2.2.0")
+addSbtPlugin("org.scalameta" % "sbt-mdoc" % "2.2.24")
 addSbtPlugin("com.typesafe.sbt" % "sbt-ghpages" % "0.6.3")
 addSbtPlugin("com.typesafe.sbt" % "sbt-site" % "1.4.0")
 addSbtPlugin("com.eed3si9n" % "sbt-unidoc" % "0.4.3")

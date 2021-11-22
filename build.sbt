@@ -1,6 +1,6 @@
 import ReleaseTransformations._
 
-lazy val additionalSupportedScalaVersions = List("2.12.11")
+lazy val additionalSupportedScalaVersions = List("2.13.7", "2.12.11")
 
 lazy val root = (project in file("."))
   .settings(
@@ -38,7 +38,7 @@ lazy val root = (project in file("."))
 
 lazy val commonSettings = Seq(
   organization := "com.ovoenergy",
-  scalaVersion := "2.13.7",
+  scalaVersion := "3.1.0",
   crossScalaVersions ++= additionalSupportedScalaVersions,
   organizationName := "OVO Energy",
   organizationHomepage := Some(url("https://www.ovoenergy.com/")),
@@ -60,9 +60,7 @@ lazy val commonSettings = Seq(
       "keir,lawson@ovoenergy.com",
       url("https://github.com/keirlawson")
     )
-  ),
-  addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.10.3"),
-  addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")
+  )
 )
 
 lazy val publishSettings = Seq(
@@ -120,7 +118,17 @@ lazy val docs = project
       "VERSION" -> version.value
     ),
     publish / skip := true,
-    publishArtifact := false
+    publishArtifact := false,
+    // mdoc (transitively) depends on scala-collection-compat_2.13,
+    // which conflicts with core's dependency on scala-collection-compat_3
+    libraryDependencies := libraryDependencies.value.map(
+      _ excludeAll (
+        ExclusionRule(
+          organization = "org.scala-lang.modules",
+          name = "scala-collection-compat_2.13"
+        ),
+      )
+    )
   )
   .dependsOn(datadog)
   .enablePlugins(MdocPlugin)

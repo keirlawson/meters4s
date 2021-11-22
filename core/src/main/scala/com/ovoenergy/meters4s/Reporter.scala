@@ -327,7 +327,7 @@ private class MeterRegistryReporter[F[_]](
         micrometer.Gauge
           .builder(
             name,
-            gauge, { i: AtomicInteger => i.doubleValue }
+            gauge, { (i: AtomicInteger) => i.doubleValue }
           )
           .tags(tags)
           .register(mx)
