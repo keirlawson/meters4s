@@ -73,7 +73,7 @@ lazy val commonDependencies = Seq(
   "org.typelevel" %% "cats-core" % "2.6.1",
   "org.typelevel" %% "cats-effect" % "3.2.9",
   "org.typelevel" %% "munit-cats-effect-3" % "1.0.6" % "test",
-  "io.micrometer" % "micrometer-core" % "1.4.1",
+  "io.micrometer" % "micrometer-core" % "1.9.0",
   "org.scala-lang.modules" %% "scala-collection-compat" % "2.6.0",
   // See https://github.com/micrometer-metrics/micrometer/issues/1133#issuecomment-452434205
   "com.google.code.findbugs" % "jsr305" % "3.0.2" % Optional
