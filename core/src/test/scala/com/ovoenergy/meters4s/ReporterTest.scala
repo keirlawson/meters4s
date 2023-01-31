@@ -67,8 +67,8 @@ class ReporterTest extends CatsEffectSuite {
     val resultingTags = registry
       .find("test.counter")
       .counter()
-      .getId()
-      .getTags()
+      .getId
+      .getTags
       .asScala
 
     assert(
@@ -90,8 +90,8 @@ class ReporterTest extends CatsEffectSuite {
     val resultingTags = registry
       .find("test.counter")
       .counter()
-      .getId()
-      .getTags()
+      .getId
+      .getTags
       .asScala
 
     assert(
@@ -113,8 +113,8 @@ class ReporterTest extends CatsEffectSuite {
     val resultingName = registry
       .find(somePrefix + "test.counter")
       .counter()
-      .getId()
-      .getName()
+      .getId
+      .getName
 
     assert(resultingName.startsWith(somePrefix))
   }
@@ -193,8 +193,8 @@ class ReporterTest extends CatsEffectSuite {
     val resultingTags = registry
       .find("test.timer")
       .timer()
-      .getId()
-      .getTags()
+      .getId
+      .getTags
       .asScala
 
     assert(
@@ -218,8 +218,8 @@ class ReporterTest extends CatsEffectSuite {
     val resultingTags = registry
       .find("test.timer")
       .timer()
-      .getId()
-      .getTags()
+      .getId
+      .getTags
       .asScala
 
     assert(
@@ -243,8 +243,8 @@ class ReporterTest extends CatsEffectSuite {
     val resultingName = registry
       .find(somePrefix + "test.timer")
       .timer()
-      .getId()
-      .getName()
+      .getId
+      .getName
 
     assert(resultingName.startsWith(somePrefix))
   }
@@ -328,8 +328,8 @@ class ReporterTest extends CatsEffectSuite {
     val resultingTags = registry
       .find("test.gauge")
       .gauge()
-      .getId()
-      .getTags()
+      .getId
+      .getTags
       .asScala
 
     assert(
@@ -352,8 +352,8 @@ class ReporterTest extends CatsEffectSuite {
     val resultingTags = registry
       .find("test.gauge")
       .gauge()
-      .getId()
-      .getTags()
+      .getId
+      .getTags
       .asScala
 
     assert(
@@ -376,8 +376,109 @@ class ReporterTest extends CatsEffectSuite {
     val resultingName = registry
       .find(somePrefix + "test.gauge")
       .gauge()
-      .getId()
-      .getName()
+      .getId
+      .getName
+
+    assert(resultingName.startsWith(somePrefix))
+  }
+
+  test("summary.record should record the supplied amount") {
+    val registry = new SimpleMeterRegistry
+    val reporter = Reporter.fromRegistry[IO](registry).unsafeRunSync()
+
+    val testee = reporter.summary("test.summary")
+    testee
+      .flatMap(_.record(10))
+      .unsafeRunSync()
+
+    assertEquals(registry.summary("test.summary").totalAmount(), 10d)
+  }
+
+  test("summary.record should record the supplied percentiles") {
+    val registry = new SimpleMeterRegistry
+    val reporter = Reporter.fromRegistry[IO](registry).unsafeRunSync()
+
+    val percentiles = Set(0.95d, 0.99d)
+    val testee =
+      reporter.summary("test.summary", percentiles = percentiles)
+    testee
+      .flatMap(_.record(10))
+      .unsafeRunSync()
+
+    assertEquals(
+      registry
+        .summary("test.summary")
+        .takeSnapshot()
+        .percentileValues()
+        .map(_.percentile())
+        .toSet,
+      percentiles
+    )
+  }
+
+  test("summary.count must return the value of the underlying counter") {
+    val registry = new SimpleMeterRegistry
+    val reporter = Reporter.fromRegistry[IO](registry).unsafeRunSync()
+    registry.summary("test.summary").record(10)
+
+    val testee = reporter.summary("test.summary")
+    assertEquals(testee.flatMap(_.count).unsafeRunSync(), 1L)
+  }
+
+  test("summary.record must add specified tags") {
+    val registry = new SimpleMeterRegistry
+    val reporter = Reporter.fromRegistry[IO](registry).unsafeRunSync()
+    val someTags = Map("tag 1" -> "A", "tag 2" -> "B")
+
+    val testee = reporter.summary("test.summary", someTags)
+    testee
+      .flatMap(_.record(10))
+      .unsafeRunSync()
+
+    val resultingTags =
+      registry.find("test.summary").summary().getId.getTags.asScala
+
+    assert(
+      resultingTags.contains(Tag.of("tag 1", "A")) && resultingTags
+        .contains(Tag.of("tag 2", "B"))
+    )
+  }
+  test("summary.record must add configured global tags") {
+    val registry = new SimpleMeterRegistry
+    val someTags = Map("tag 1" -> "A", "tag 2" -> "B")
+    val reporter =
+      Reporter
+        .fromRegistry[IO](registry, MetricsConfig(tags = someTags))
+        .unsafeRunSync()
+
+    val testee = reporter.summary("test.summary")
+    testee
+      .flatMap(_.record(10))
+      .unsafeRunSync()
+
+    val resultingTags =
+      registry.find("test.summary").summary().getId.getTags.asScala
+
+    assert(
+      resultingTags.contains(Tag.of("tag 1", "A")) && resultingTags
+        .contains(Tag.of("tag 2", "B"))
+    )
+  }
+  test("summary.record must add configured global prefix") {
+    val registry = new SimpleMeterRegistry
+    val somePrefix = "some.prefix"
+    val reporter =
+      Reporter
+        .fromRegistry[IO](registry, MetricsConfig(prefix = somePrefix))
+        .unsafeRunSync()
+
+    val testee = reporter.summary("test.summary")
+    testee
+      .flatMap(_.record(10))
+      .unsafeRunSync()
+
+    val resultingName =
+      registry.find(somePrefix + "test.summary").summary().getId.getName
 
     assert(resultingName.startsWith(somePrefix))
   }

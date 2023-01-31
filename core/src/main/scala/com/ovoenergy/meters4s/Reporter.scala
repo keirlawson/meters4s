@@ -16,11 +16,11 @@
 
 package com.ovoenergy.meters4s
 
-import cats.effect.{Sync, Async}
+import cats.effect.{Async, Sync}
 import cats.implicits._
 import cats.effect.implicits._
 import cats.effect.std.Semaphore
-import Reporter.{Counter, Timer, Gauge}
+import Reporter.{Counter, DistributionSummary, Gauge, Timer}
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import io.micrometer.core.instrument.{MeterRegistry, Tag}
 import io.micrometer.core.{instrument => micrometer}
@@ -97,6 +97,25 @@ trait Reporter[F[_]] {
       tags: Map[String, String] = Map.empty,
       initialValue: Int = 0
   ): F[Gauge[F]]
+
+  /**
+    * Create a distribution summary to track the sample distribution of events.
+    * An example would be the response sizes for requests hitting an http server.
+    *
+    * @param name the summary's name
+    * @param tags tags associated with this summary
+    * @param percentiles Produces an additional time series for each requested percentile. This
+    * percentile is computed locally, and so can't be aggregated with percentiles
+    * computed across other dimensions (e.g. in a different instance).
+    * @param baseUnit Base unit of the eventual distribution summary (eg. bytes).
+    * @return an effect that evaluates to a distribution summary instance
+    */
+  def summary(
+      name: String,
+      tags: Map[String, String] = Map.empty,
+      percentiles: Set[Double] = Set.empty,
+      baseUnit: Option[String] = None
+  ): F[DistributionSummary[F]]
 }
 
 object Reporter {
@@ -201,6 +220,28 @@ object Reporter {
 
     /** Run `action` with the gauge incremented before execution and decremented after termination (including error or cancelation) */
     def surround[A](action: F[A]): F[A]
+  }
+
+  /**
+    * A generic distribution summary to track the sample distribution of events.
+    */
+  trait DistributionSummary[F[_]] {
+
+    /**
+      * Updates the statistics kept by the summary with the specified amount.
+      * For example, the size in bytes of responses from a server.
+      * If the amount is less than 0 the value will be dropped.
+      *
+      * @param value Amount for the event being measured.
+      */
+    def record(value: Double): F[Unit]
+
+    /**
+      * The number of times that record has been called since this summary was created.
+      *
+      * @return an effect evaluating to the current event count of the summary
+      */
+    def count: F[Long]
   }
 
   def apply[F[_]](implicit ev: Reporter[F]): Reporter[F] = ev
@@ -367,4 +408,26 @@ private class MeterRegistryReporter[F[_]](
     }
 
   }
+
+  def summary(
+      name: String,
+      tags: Map[String, String],
+      percentiles: Set[Double],
+      baseUnit: Option[String]
+  ): F[DistributionSummary[F]] =
+    F.delay {
+        val builder = micrometer.DistributionSummary
+          .builder(metricName(name))
+          .tags(effectiveTags(tags))
+          .publishPercentiles(percentiles.toSeq: _*)
+
+        baseUnit.fold(builder)(builder.baseUnit).register(mx)
+      }
+      .map { d =>
+        new DistributionSummary[F] {
+          def record(value: Double): F[Unit] = F.delay(d.record(value))
+
+          def count: F[Long] = F.delay(d.count())
+        }
+      }
 }
