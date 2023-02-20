@@ -309,7 +309,7 @@ private class MeterRegistryReporter[F[_]](
   def metricName(name: String): String = s"${config.prefix}${name}"
 
   def counter(name: String, tags: Map[String, String]): F[Counter[F]] =
-    F.delay {
+    F.blocking {
         micrometer.Counter
           .builder(metricName(name))
           .tags(effectiveTags(tags))
@@ -328,7 +328,7 @@ private class MeterRegistryReporter[F[_]](
       tags: Map[String, String],
       percentiles: Set[Double]
   ): F[Timer[F]] =
-    F.delay {
+    F.blocking {
         micrometer.Timer
           .builder(metricName(name))
           .tags(effectiveTags(tags))
@@ -364,7 +364,7 @@ private class MeterRegistryReporter[F[_]](
       initialValue: Int
   ): F[AtomicInteger] = F.delay(new AtomicInteger(initialValue)).flatTap {
     gauge =>
-      F.delay(
+      F.blocking(
         micrometer.Gauge
           .builder(
             name,
@@ -415,7 +415,7 @@ private class MeterRegistryReporter[F[_]](
       percentiles: Set[Double],
       baseUnit: Option[String]
   ): F[DistributionSummary[F]] =
-    F.delay {
+    F.blocking {
         val builder = micrometer.DistributionSummary
           .builder(metricName(name))
           .tags(effectiveTags(tags))
