@@ -1,6 +1,6 @@
 import ReleaseTransformations._
 
-lazy val additionalSupportedScalaVersions = List("2.13.9", "2.12.17")
+lazy val additionalSupportedScalaVersions = List("2.13.10", "2.12.17")
 
 lazy val root = (project in file("."))
   .settings(
@@ -38,7 +38,7 @@ lazy val root = (project in file("."))
 
 lazy val commonSettings = Seq(
   organization := "com.ovoenergy",
-  scalaVersion := "3.1.3",
+  scalaVersion := "3.2.2",
   crossScalaVersions ++= additionalSupportedScalaVersions,
   organizationName := "OVO Energy",
   organizationHomepage := Some(url("https://www.ovoenergy.com/")),
@@ -70,11 +70,11 @@ lazy val publishSettings = Seq(
 )
 
 lazy val commonDependencies = Seq(
-  "org.typelevel" %% "cats-core" % "2.8.0",
-  "org.typelevel" %% "cats-effect" % "3.3.14",
+  "org.typelevel" %% "cats-core" % "2.9.0",
+  "org.typelevel" %% "cats-effect" % "3.4.7",
   "org.typelevel" %% "munit-cats-effect-3" % "1.0.7" % "test",
-  "io.micrometer" % "micrometer-core" % "1.9.4",
-  "org.scala-lang.modules" %% "scala-collection-compat" % "2.8.1",
+  "io.micrometer" % "micrometer-core" % "1.9.8",
+  "org.scala-lang.modules" %% "scala-collection-compat" % "2.9.0",
   // See https://github.com/micrometer-metrics/micrometer/issues/1133#issuecomment-452434205
   "com.google.code.findbugs" % "jsr305" % "3.0.2" % Optional
 )
@@ -93,7 +93,7 @@ lazy val datadog = project
     commonSettings,
     publishSettings,
     libraryDependencies ++= commonDependencies ++ Seq(
-      "io.micrometer" % "micrometer-registry-datadog" % "1.9.4"
+      "io.micrometer" % "micrometer-registry-datadog" % "1.9.8"
     )
   )
   .dependsOn(core)
@@ -104,7 +104,7 @@ lazy val statsd = project
     commonSettings,
     publishSettings,
     libraryDependencies ++= commonDependencies ++ Seq(
-      "io.micrometer" % "micrometer-registry-statsd" % "1.9.4"
+      "io.micrometer" % "micrometer-registry-statsd" % "1.9.8"
     )
   )
   .dependsOn(core)
