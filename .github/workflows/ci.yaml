@@ -6,6 +6,9 @@ on:
       branches:
         - main
 
+
+name: Build Meters4s
+
 jobs:
     build:
         runs-on: ubuntu-latest
