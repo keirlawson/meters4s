@@ -34,11 +34,11 @@ lazy val root = (project in file("."))
   .enablePlugins(GhpagesPlugin)
   .enablePlugins(SiteScaladocPlugin)
   .enablePlugins(ScalaUnidocPlugin)
-  .aggregate(core, datadog, statsd, docs)
+  .aggregate(core, datadog, statsd, prometheus, docs)
 
 lazy val commonSettings = Seq(
   organization := "com.ovoenergy",
-  scalaVersion := "3.2.2",
+  scalaVersion := "3.3.0",
   crossScalaVersions ++= additionalSupportedScalaVersions,
   organizationName := "OVO Energy",
   organizationHomepage := Some(url("https://www.ovoenergy.com/")),
@@ -71,10 +71,10 @@ lazy val publishSettings = Seq(
 
 lazy val commonDependencies = Seq(
   "org.typelevel" %% "cats-core" % "2.9.0",
-  "org.typelevel" %% "cats-effect" % "3.4.7",
+  "org.typelevel" %% "cats-effect" % "3.5.0",
   "org.typelevel" %% "munit-cats-effect-3" % "1.0.7" % "test",
-  "io.micrometer" % "micrometer-core" % "1.9.8",
-  "org.scala-lang.modules" %% "scala-collection-compat" % "2.9.0",
+  "io.micrometer" % "micrometer-core" % "1.10.5",
+  "org.scala-lang.modules" %% "scala-collection-compat" % "2.10.0",
   // See https://github.com/micrometer-metrics/micrometer/issues/1133#issuecomment-452434205
   "com.google.code.findbugs" % "jsr305" % "3.0.2" % Optional
 )
@@ -93,7 +93,7 @@ lazy val datadog = project
     commonSettings,
     publishSettings,
     libraryDependencies ++= commonDependencies ++ Seq(
-      "io.micrometer" % "micrometer-registry-datadog" % "1.9.8"
+      "io.micrometer" % "micrometer-registry-datadog" % "1.10.5"
     )
   )
   .dependsOn(core)
@@ -104,7 +104,18 @@ lazy val statsd = project
     commonSettings,
     publishSettings,
     libraryDependencies ++= commonDependencies ++ Seq(
-      "io.micrometer" % "micrometer-registry-statsd" % "1.9.8"
+      "io.micrometer" % "micrometer-registry-statsd" % "1.10.5"
+    )
+  )
+  .dependsOn(core)
+
+lazy val prometheus = project
+  .settings(
+    name := "meters4s-prometheus",
+    commonSettings,
+    publishSettings,
+    libraryDependencies ++= commonDependencies ++ Seq(
+      "io.micrometer" % "micrometer-registry-prometheus" % "1.10.5"
     )
   )
   .dependsOn(core)

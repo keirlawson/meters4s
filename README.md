@@ -9,7 +9,7 @@ for counters, timers, gauges and distributions.
 Add the following dependency to your `build.sbt`:
 
 ```scala
-libraryDependencies += "com.ovoenergy" %% "meters4s" % "1.1.2"
+libraryDependencies += "com.ovoenergy" %% "meters4s" % "<see latest version>"
 ```
 
 Or for Cats Effect 2.x use the 0.4.x series.
@@ -24,13 +24,19 @@ StatsD to provide and ergonomic means for creating reporters for these registrie
 follows:
 
 ```scala
-libraryDependencies += "com.ovoenergy" %% "meters4s-datadog" % "1.1.2"
+libraryDependencies += "com.ovoenergy" %% "meters4s-datadog" % "<see latest version>"
 ```
 
 or
 
 ```scala
-libraryDependencies += "com.ovoenergy" %% "meters4s-statsd" % "1.1.2"
+libraryDependencies += "com.ovoenergy" %% "meters4s-statsd" % "<see latest version>"
+```
+
+or 
+
+```scala
+libraryDependencies += "com.ovoenergy" %% "meters4s-prometheus" % "<see latest version>"
 ```
 
 ## Usage
@@ -62,6 +68,53 @@ val datadog =
   DataDog.createReporter[IO](DataDogConfig(apiKey = "1234"), MetricsConfig())
 datadog.use { reporter =>
   reporter.counter("my.counter").flatMap { counter => counter.increment }
+}
+```
+
+## With Prometheus
+
+Here is an example that reports CPU metrics as well as a counter that can be retrieved via the 
+`PrometheusMeterRegistry`'s `scrape` method. Note your HTTP endpoint will expose this for Prometheus to scrape.
+
+```scala
+import cats.effect._
+import cats.effect.std.Console
+import cats.effect.syntax.all._
+import cats.syntax.all._
+import com.ovoenergy.meter4s.prometheus._
+import com.ovoenergy.meters4s.{MetricsConfig, Reporter}
+import io.micrometer.core.instrument.binder.system.ProcessorMetrics
+
+import scala.concurrent.duration._
+
+object PromExampleApp extends IOApp {
+
+  override def run(args: List[String]): IO[ExitCode] =
+    program[IO](args).as(ExitCode.Success)
+
+  def program[F[_]](args: List[String])(implicit F: Async[F], C: Console[F]): F[Nothing] = {
+    val resources =
+      for {
+        registry <- Prometheus.createMeterRegistry[F](PrometheusConfig())
+        _ <- Resource.eval(F.delay(new ProcessorMetrics().bindTo(registry)))
+        reporter <- Resource.eval[F, Reporter[F]](
+          Prometheus.createReporter[F](MetricsConfig(), registry)
+        )
+      } yield (registry, reporter)
+
+    resources
+      .evalMap { case (registry, reporter) =>
+        reporter
+          .counter("test_counter")
+          .map(counter => (registry, reporter, counter))
+      }
+      .use { case (registry, reporter, counter) =>
+        val scrape = C.println(registry.scrape)
+        val increment = counter.increment
+
+        (increment >> scrape).delayBy(10.seconds).foreverM
+      }
+  }
 }
 ```
 
