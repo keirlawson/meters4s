@@ -1,7 +1,7 @@
-package com.ovoenergy.meters4s.statsd
+package meters4s.statsd
 
 import cats.effect.{Resource, Sync, Async}
-import com.ovoenergy.meters4s.{MetricsConfig, Reporter}
+import meters4s.{MetricsConfig, Reporter}
 import io.micrometer.statsd.{StatsdConfig => MmStatsdConfig}
 import io.micrometer.core.instrument.MeterRegistry
 import scala.concurrent.duration.FiniteDuration

@@ -1,8 +1,8 @@
-package com.ovoenergy.meters4s.datadog
+package meters4s.datadog
 
 import cats.effect.{Async, Resource, Sync}
 import cats.implicits._
-import com.ovoenergy.meters4s.{MetricsConfig, Reporter}
+import meters4s.{MetricsConfig, Reporter}
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.datadog.{
   DatadogMeterRegistry,

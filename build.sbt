@@ -1,6 +1,8 @@
 import ReleaseTransformations._
 
-lazy val additionalSupportedScalaVersions = List("2.13.10", "2.12.17")
+lazy val http4sVersion = "0.23.23"
+
+lazy val additionalSupportedScalaVersions = List("2.13.12", "2.12.18")
 
 lazy val root = (project in file("."))
   .settings(
@@ -34,7 +36,7 @@ lazy val root = (project in file("."))
   .enablePlugins(GhpagesPlugin)
   .enablePlugins(SiteScaladocPlugin)
   .enablePlugins(ScalaUnidocPlugin)
-  .aggregate(core, datadog, statsd, prometheus, docs)
+  .aggregate(core, datadog, statsd, prometheus, docs, http4s)
 
 lazy val commonSettings = Seq(
   organization := "com.ovoenergy",
@@ -72,7 +74,7 @@ lazy val publishSettings = Seq(
 lazy val commonDependencies = Seq(
   "org.typelevel" %% "cats-core" % "2.9.0",
   "org.typelevel" %% "cats-effect" % "3.5.0",
-  "org.typelevel" %% "munit-cats-effect-3" % "1.0.7" % "test",
+  "org.typelevel" %% "munit-cats-effect" % "2.0.0-M3" % Test,
   "io.micrometer" % "micrometer-core" % "1.10.5",
   "org.scala-lang.modules" %% "scala-collection-compat" % "2.10.0",
   // See https://github.com/micrometer-metrics/micrometer/issues/1133#issuecomment-452434205
@@ -116,6 +118,20 @@ lazy val prometheus = project
     publishSettings,
     libraryDependencies ++= commonDependencies ++ Seq(
       "io.micrometer" % "micrometer-registry-prometheus" % "1.10.5"
+    )
+  )
+  .dependsOn(core)
+
+lazy val http4s = project
+  .settings(
+    name := "meters4s-http4s",
+    commonSettings,
+    publishSettings,
+    libraryDependencies ++= commonDependencies ++ Seq(
+      "org.http4s" %% "http4s-core" % http4sVersion,
+      "org.http4s" %% "http4s-dsl" % http4sVersion % Test,
+      "org.http4s" %% "http4s-server" % http4sVersion % Test,
+      "org.http4s" %% "http4s-client" % http4sVersion % Test,
     )
   )
   .dependsOn(core)

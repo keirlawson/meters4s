@@ -1,4 +1,4 @@
-package com.ovoenergy.meters4s
+package meters4s
 
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import cats.effect.IO

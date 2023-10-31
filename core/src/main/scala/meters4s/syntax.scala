@@ -1,4 +1,4 @@
-package com.ovoenergy.meters4s
+package meters4s
 
 import scala.concurrent.duration._
 

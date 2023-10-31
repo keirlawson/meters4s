@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.ovoenergy.meter4s.prometheus
+package meter4s.prometheus
 import cats.effect.{Async, Resource, Sync}
-import com.ovoenergy.meters4s.{MetricsConfig, Reporter}
+import meters4s.{MetricsConfig, Reporter}
 import io.micrometer.prometheus
 import io.micrometer.prometheus.{
   PrometheusMeterRegistry,
