@@ -1,5 +1,7 @@
 import ReleaseTransformations._
 
+ThisBuild / sonatypeCredentialHost := "s01.oss.sonatype.org"
+
 lazy val http4sVersion = "0.23.23"
 
 lazy val additionalSupportedScalaVersions = List("2.13.12", "2.12.18")
