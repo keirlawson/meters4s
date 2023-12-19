@@ -9,7 +9,7 @@ lazy val root = (project in file("."))
     name := "meters4s",
     commonSettings,
     libraryDependencies ++= commonDependencies,
-    git.remoteRepo := "git@github.com:ovotech/meters4s.git",
+    git.remoteRepo := "git@github.com:keirlawson/meters4s.git",
     ScalaUnidoc / siteSubdirName := "latest/api",
     addMappingsToSiteDir(
       ScalaUnidoc / packageDoc / mappings,
@@ -39,27 +39,25 @@ lazy val root = (project in file("."))
   .aggregate(core, datadog, statsd, prometheus, docs, http4s)
 
 lazy val commonSettings = Seq(
-  organization := "com.ovoenergy",
+  organization := "io.github.keirlawson",
   scalaVersion := "3.3.0",
   crossScalaVersions ++= additionalSupportedScalaVersions,
-  organizationName := "OVO Energy",
-  organizationHomepage := Some(url("https://www.ovoenergy.com/")),
-  homepage := Some(url("https://github.com/ovotech/meters4s")),
+  homepage := Some(url("https://github.com/keirlawson/meters4s")),
   startYear := Some(2020),
   licenses := Seq(
     ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0"))
   ),
   scmInfo := Some(
     ScmInfo(
-      url("https://github.com/ovotech/meters4s"),
-      "git@github.com:ovotech/meters4s.git"
+      url("https://github.com/keirlawson/meters4s"),
+      "git@github.com:keirlawson/meters4s.git"
     )
   ),
   developers := List(
     Developer(
       "keirlawson",
       "Keir Lawson",
-      "keir,lawson@ovoenergy.com",
+      "keirlawson@gmail.com",
       url("https://github.com/keirlawson")
     )
   )
@@ -67,7 +65,7 @@ lazy val commonSettings = Seq(
 
 lazy val publishSettings = Seq(
   publishTo := sonatypePublishToBundle.value,
-  sonatypeProfileName := "com.ovoenergy",
+  sonatypeProfileName := "io.github.keirlawson",
   publishMavenStyle := true
 )
 

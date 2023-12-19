@@ -17,7 +17,7 @@ resolvers ++= Seq(
 Add the following depdency to your `build.sbt`:
 
 ```scala
-libraryDependencies += "com.ovoenergy" %% "meters4s" % "@VERSION@"
+libraryDependencies += "io.github.keirlawson" %% "meters4s" % "@VERSION@"
 ```
 
 You will likely also want to add the module corresponding to whichever monitoring system you want to report metrics to.  All 
@@ -28,18 +28,18 @@ For developer convience we also provide a couple of modules for particular monit
 StatsD to provide and ergonomic means for creating reporters for these registries.  These can be added to your poject as follows:
 
 ```scala
-libraryDependencies += "com.ovoenergy" %% "meters4s-datadog" % "@VERSION@"
+libraryDependencies += "io.github.keirlawson" %% "meters4s-datadog" % "@VERSION@"
 ```
 
 or
 
 ```scala
-libraryDependencies += "com.ovoenergy" %% "meters4s-statsd" % "@VERSION@"
+libraryDependencies += "io.github.keirlawson" %% "meters4s-statsd" % "@VERSION@"
 ```
 
 ## Usage
 
-For comprehensive API documentation check [the scaladoc](https://ovotech.github.io/meters4s/latest/api/).
+For comprehensive API documentation check [the scaladoc](https://keirlawson.github.io/meters4s/latest/api/).
 
 A simple usage example for incrementing a counter, backed by a Micrometer `SimpleMeterRegistry`:
 

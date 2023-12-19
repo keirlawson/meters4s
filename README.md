@@ -9,7 +9,7 @@ for counters, timers, gauges and distributions.
 Add the following dependency to your `build.sbt`:
 
 ```scala
-libraryDependencies += "com.ovoenergy" %% "meters4s" % "<see latest version>"
+libraryDependencies += "io.github.keirlawson" %% "meters4s" % "<see latest version>"
 ```
 
 Or for Cats Effect 2.x use the 0.4.x series.
@@ -24,24 +24,24 @@ StatsD to provide and ergonomic means for creating reporters for these registrie
 follows:
 
 ```scala
-libraryDependencies += "com.ovoenergy" %% "meters4s-datadog" % "<see latest version>"
+libraryDependencies += "io.github.keirlawson" %% "meters4s-datadog" % "<see latest version>"
 ```
 
 or
 
 ```scala
-libraryDependencies += "com.ovoenergy" %% "meters4s-statsd" % "<see latest version>"
+libraryDependencies += "io.github.keirlawson" %% "meters4s-statsd" % "<see latest version>"
 ```
 
 or 
 
 ```scala
-libraryDependencies += "com.ovoenergy" %% "meters4s-prometheus" % "<see latest version>"
+libraryDependencies += "io.github.keirlawson" %% "meters4s-prometheus" % "<see latest version>"
 ```
 
 ## Usage
 
-For comprehensive API documentation check [the scaladoc](https://ovotech.github.io/meters4s/latest/api/).
+For comprehensive API documentation check [the scaladoc](https://keirlawson.github.io/meters4s/latest/api/).
 
 A simple usage example for incrementing a counter, backed by a Micrometer `SimpleMeterRegistry`:
 
