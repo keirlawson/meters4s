@@ -42,7 +42,7 @@ lazy val root = (project in file("."))
 
 lazy val commonSettings = Seq(
   organization := "io.github.keirlawson",
-  scalaVersion := "3.3.0",
+  scalaVersion := "3.3.1",
   crossScalaVersions ++= additionalSupportedScalaVersions,
   homepage := Some(url("https://github.com/keirlawson/meters4s")),
   startYear := Some(2020),
