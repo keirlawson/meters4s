@@ -2,7 +2,7 @@ import ReleaseTransformations._
 
 ThisBuild / sonatypeCredentialHost := "s01.oss.sonatype.org"
 
-lazy val http4sVersion = "0.23.23"
+lazy val http4sVersion = "0.23.27"
 
 lazy val additionalSupportedScalaVersions = List("2.13.12", "2.12.18")
 
@@ -72,11 +72,11 @@ lazy val publishSettings = Seq(
 )
 
 lazy val commonDependencies = Seq(
-  "org.typelevel" %% "cats-core" % "2.9.0",
-  "org.typelevel" %% "cats-effect" % "3.5.0",
-  "org.typelevel" %% "munit-cats-effect" % "2.0.0-M3" % Test,
-  "io.micrometer" % "micrometer-core" % "1.10.5",
-  "org.scala-lang.modules" %% "scala-collection-compat" % "2.10.0",
+  "org.typelevel" %% "cats-core" % "2.12.0",
+  "org.typelevel" %% "cats-effect" % "3.5.4",
+  "org.typelevel" %% "munit-cats-effect" % "2.0.0" % Test,
+  "io.micrometer" % "micrometer-core" % "1.10.13",
+  "org.scala-lang.modules" %% "scala-collection-compat" % "2.12.0",
   // See https://github.com/micrometer-metrics/micrometer/issues/1133#issuecomment-452434205
   "com.google.code.findbugs" % "jsr305" % "3.0.2" % Optional
 )
@@ -95,7 +95,7 @@ lazy val datadog = project
     commonSettings,
     publishSettings,
     libraryDependencies ++= commonDependencies ++ Seq(
-      "io.micrometer" % "micrometer-registry-datadog" % "1.10.5"
+      "io.micrometer" % "micrometer-registry-datadog" % "1.10.13"
     )
   )
   .dependsOn(core)
@@ -106,7 +106,7 @@ lazy val statsd = project
     commonSettings,
     publishSettings,
     libraryDependencies ++= commonDependencies ++ Seq(
-      "io.micrometer" % "micrometer-registry-statsd" % "1.10.5"
+      "io.micrometer" % "micrometer-registry-statsd" % "1.10.13"
     )
   )
   .dependsOn(core)
@@ -117,7 +117,7 @@ lazy val prometheus = project
     commonSettings,
     publishSettings,
     libraryDependencies ++= commonDependencies ++ Seq(
-      "io.micrometer" % "micrometer-registry-prometheus" % "1.10.5"
+      "io.micrometer" % "micrometer-registry-prometheus" % "1.10.13"
     )
   )
   .dependsOn(core)
